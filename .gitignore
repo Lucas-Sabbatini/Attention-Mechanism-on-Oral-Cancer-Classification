@@ -1,0 +1,9 @@
+*.dat
+.venv/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.swo
