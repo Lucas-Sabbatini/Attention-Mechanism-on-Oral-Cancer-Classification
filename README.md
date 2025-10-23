@@ -5,10 +5,11 @@ This project aims to validate the hypothesis of a Transformer-based model for or
 
 ## Dataset
 
+The dataset is protected by the Federal University of Uberlândia, and therefore cannot be made public for ethical reasons.
+
 - **Input**: Spectroscopic data with wavenumber measurements
 - **Output**: Binary classification (-1: non-cancerous, 1: cancerous)
 - **Features**: Spectral intensities across different wavenumbers
-- **Wavenumber Range**: Truncated to [850.0, 3050.0] cm⁻¹
 
 ## Preprocessing Pipeline
 
@@ -43,19 +44,30 @@ This project aims to validate the hypothesis of a Transformer-based model for or
 | Specificity         | 0.8000  |
 | F1-Score            | 0.8000  |
 
-**Performance Interpretation:**
-- **High Precision (85.71%)**: When the model predicts cancer, it's correct 85.71% of the time
-- **Good Sensitivity (75.00%)**: The model correctly identifies 75% of actual cancer cases
-- **Balanced F1-Score (80.00%)**: Good balance between precision and recall
-- **Good Specificity (80.00%)**: The model correctly identifies 80% of non-cancer cases
 
 ## Installation
 
 1. Clone the repository
-2. Install dependencies:
+```bash
+git clone git@github.com:Lucas-Sabbatini/Attention-Mechanism-on-Oral-Cancer-Classification.git
+```
+
+2. Create an Virual Enviroment
+```bash
+python3 -m venv .venv
+```
+
+3. Activate it
+```bash
+source .venv/bin/activate
+```
+
+4. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+
+
 
 ## Usage
 
