@@ -59,7 +59,7 @@ class WavenumberTruncator:
         
         return closest_line, closest_value, False
     
-    def trucate_range(self, lower_bound :int, upper_bound :int, X:np.ndarray):
+    def trucate_range(self, X:np.ndarray, lower_bound :int, upper_bound :int ):
         """
         Truncate the dataset to only include wavenumbers within [lower_bound, upper_bound].
         Remember all the metrics are in reciprocal centimeter (DESC order). 

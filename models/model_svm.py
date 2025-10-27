@@ -1,6 +1,6 @@
-import xgboost as xgb
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn import svm
 import numpy as np
 from pathlib import Path
 
@@ -36,21 +36,12 @@ X_train = truncator.trucate_range( X_train, 3050.0, 850.0)
 X_test = truncator.trucate_range(X_test, 3050.0, 850.0)
 
 
-dtrain = xgb.DMatrix(X_train, label=y_train)
-dtest = xgb.DMatrix(X_test, label=y_test)
 
-# Specify our model hyperparameters
-param = {'max_depth': 2, 'eta': 1, 'objective': 'binary:logistic'}
-param['nthread'] = 4
-param['eval_metric'] = ['auc']
-evallist = [(dtrain, 'train'), (dtest, 'eval')]
-num_round = 10
+clf = svm.SVC(kernel='rbf', C=1, gamma='scale')
+clf.fit(X_train, y_train)
 
-# Instantiate the model
-model = xgb.train(param, dtrain, num_round, evallist)
+y_pred = clf.predict(X_test)
 
-y_pred_prob = model.predict(dtest)
-y_pred = (y_pred_prob > 0.5).astype(int)
 
 acc = accuracy_score(y_test, y_pred)
 prec = precision_score(y_test, y_pred)
