@@ -27,21 +27,23 @@ X_test = SavitzkyFilter().buildFilter(X_test)
 
 # Normalize data
 normalizer = Normalization()
-#X_train = normalizer.peak_normalization(X_train, 1660.0, 1630.0)
-#X_test = normalizer.peak_normalization(X_test, 1660.0, 1630.0)
 
-# Truncate wavenumber range [1800, 900]
+X_train = normalizer.peak_normalization(X_train, 1660.0, 1630.0)
+X_test = normalizer.peak_normalization(X_test, 1660.0, 1630.0)
+
+# Trucate to biologically relevant range
 truncator = WavenumberTruncator()
-X_train = truncator.trucate_range( X_train, 3050.0, 850.0)
-X_test = truncator.trucate_range(X_test, 3050.0, 850.0)
+#X_train = truncator.trucate_range( X_train, 3050.0, 850.0)
+#X_test = truncator.trucate_range(X_test, 3050.0, 850.0)
 
 
-
-clf = svm.SVC(kernel='rbf', C=1, gamma='scale')
+#Train SVM model
+#clf = svm.SVC(kernel='rbf', C=1, gamma='scale')
+clf = svm.SVC(kernel='linear')
 clf.fit(X_train, y_train)
 
+#Evaluate model
 y_pred = clf.predict(X_test)
-
 
 acc = accuracy_score(y_test, y_pred)
 prec = precision_score(y_test, y_pred)
