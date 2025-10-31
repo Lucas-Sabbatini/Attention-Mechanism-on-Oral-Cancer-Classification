@@ -7,6 +7,10 @@ This project aims to validate the hypothesis of a Transformer-based model for or
 
 The dataset is protected by the Federal University of Uberlândia, and therefore cannot be made public for ethical reasons.
 
+![Overview](./ploting/img/all_samples_overlapped.png)
+
+![Mean and Standar Deviation](./ploting/img/mean_std_plot.png)
+
 - **Input**: Spectroscopic data with wavenumber measurements
 - **Output**: Binary classification (-1: non-cancerous, 1: cancerous)
 - **Features**: Spectral intensities across different wavenumbers
@@ -21,19 +25,6 @@ The dataset is protected by the Federal University of Uberlândia, and therefore
 
 ### XGBoost Classifier
 
-**Model Parameters:**
-- `max_depth`: 2
-- `eta` (learning rate): 1
-- `objective`: binary:logistic
-- `nthread`: 4
-- `eval_metric`: AUC
-- `num_round`: 10 boosting rounds
-
-**Training Configuration:**
-- Train/Test Split: 80/20
-- Random State: 42
-- Prediction Threshold: 0.5
-
 **Results:**
 
 | Metric              | Score   |
@@ -43,6 +34,18 @@ The dataset is protected by the Federal University of Uberlândia, and therefore
 | Sensitivity (Recall)| 0.7500  |
 | Specificity         | 0.8000  |
 | F1-Score            | 0.8000  |
+
+### Support Vector Machines - Linear Kernel
+
+**Results:**
+
+| Metric              | Score   |
+|---------------------|---------|
+| Accuracy            | 0.6154  |
+| Precision           | 0.6364  |
+| Sensitivity (Recall)| 0.8750  |
+| Specificity         | 0.2000  |
+| F1-Score            | 0.7368  |
 
 
 ## Installation
