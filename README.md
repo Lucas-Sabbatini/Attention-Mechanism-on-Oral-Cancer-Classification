@@ -42,7 +42,9 @@ Wich, normalizes each spectrum by its highest intensity value within the Amidae-
 
 We applied Stratified k-fold validation with k=10 to ensure robust evaluation of model performance. Dealing with these imbalanced dataset besides the lack of samples.
 
-![teste](./ploting/img/stratified_kfold_visualization.png)
+<p align="center">
+    <img src="./ploting/img/stratified_kfold_visualization.png" alt="Stratified K-Fold Visualization" width="60%" />
+</p>
 
 ### Metrics:
 - **Accuracy**: Overall correctness of the model.
@@ -53,29 +55,34 @@ We applied Stratified k-fold validation with k=10 to ensure robust evaluation of
 
 ## Models
 
-### XGBoost Classifier
+### Preprocessing Pipeline Comparison
 
-**Results:**
+The following tables show the performance of XGBoost and SVM-RBF models across different preprocessing pipelines using 10-fold stratified cross-validation:
 
-| Metric              | Score   |
-|---------------------|---------|
-| Accuracy            | 0.7692  |
-| Precision           | 0.8571  |
-| Sensitivity (Recall)| 0.7500  |
-| Specificity         | 0.8000  |
-| F1-Score            | 0.8000  |
+#### XGBoost Classifier
 
-### Support Vector Machines - Linear Kernel
+| Preprocessing Pipeline | Accuracy | Precision | Recall (Sensitivity) | Specificity | F1 Score |
+|------------------------|----------|-----------|----------------------|-------------|----------|
+| **Raw (No Normalization)** | **0.6429 ± 0.1483** | **0.7100 ± 0.1234** | 0.7250 ± 0.1750 | **0.5167 ± 0.2522** | **0.7074 ± 0.1185** |
+| Rubberband (No Normalization) | 0.6024 ± 0.1300 | 0.6733 ± 0.1517 | **0.7750 ± 0.1750** | 0.3833 ± 0.3078 | 0.6960 ± 0.0951 |
+| AsLS (No Normalization) | 0.5857 ± 0.2331 | 0.6238 ± 0.2747 | 0.6500 ± 0.3000 | 0.4833 ± 0.3686 | 0.6263 ± 0.2674 |
+| Polynomial | 0.5595 ± 0.1252 | 0.6367 ± 0.1394 | 0.6667 ± 0.1581 | 0.3833 ± 0.3167 | 0.6400 ± 0.1118 |
+| AsLS | 0.4667 ± 0.1393 | 0.5583 ± 0.1902 | 0.6083 ± 0.2175 | 0.2500 ± 0.3096 | 0.5636 ± 0.1561 |
 
-**Results:**
+#### Support Vector Machine (RBF Kernel)
 
-| Metric              | Score   |
-|---------------------|---------|
-| Accuracy            | 0.6154  |
-| Precision           | 0.6364  |
-| Sensitivity (Recall)| 0.8750  |
-| Specificity         | 0.2000  |
-| F1-Score            | 0.7368  |
+| Preprocessing Pipeline | Accuracy | Precision | Recall (Sensitivity) | Specificity | F1 Score |
+|------------------------|----------|-----------|----------------------|-------------|----------|
+| **Raw (No Normalization)** | **0.6226 ± 0.1140** | **0.6562 ± 0.1100** | 0.8625 ± 0.1850 | 0.2583 ± 0.3139 | **0.7288 ± 0.0920** |
+| Rubberband (No Normalization) | 0.6024 ± 0.1002 | 0.6379 ± 0.1198 | **0.8875 ± 0.1672** | 0.1917 ± 0.2900 | 0.7232 ± 0.0789 |
+| AsLS (No Normalization) | 0.6083 ± 0.1733 | 0.6226 ± 0.1986 | 0.8250 ± 0.2750 | **0.2750 ± 0.3467** | 0.6956 ± 0.2040 |
+| Polynomial | 0.5810 ± 0.0994 | 0.6195 ± 0.1077 | 0.8333 ± 0.2007 | 0.1917 ± 0.2947 | 0.6952 ± 0.1014 |
+| AsLS | 0.5345 ± 0.1261 | 0.5804 ± 0.1420 | 0.8042 ± 0.2490 | 0.1250 ± 0.2521 | 0.6569 ± 0.1479 |
+
+**Key Findings:**
+- **Raw data without normalization** achieves the best performance across both models
+- XGBoost shows better balance between sensitivity and specificity compared to SVM-RBF
+- SVM-RBF achieves higher recall but lower specificity, indicating bias toward the positive class
 
 
 ## Installation

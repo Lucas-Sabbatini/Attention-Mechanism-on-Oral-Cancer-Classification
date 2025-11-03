@@ -1,0 +1,63 @@
+from sklearn.model_selection import StratifiedKFold
+import numpy as np
+
+from preProcess.baseline_correction import BaselineCorrection
+from preProcess.fingerprint_trucate import WavenumberTruncator
+from preProcess.normalization import Normalization
+from models.model_xgb import XGBModel
+from models.model_svm import SVMRBFModel
+
+dataset_path = "dataset_cancboca.dat"
+
+# Sample Data
+dataset = np.loadtxt(dataset_path)
+X = dataset[:,:-1]
+y = dataset[:,-1].astype(int)
+y = np.where(y == -1, 0, 1)
+
+#Stratified K-Fold Cross Validation
+skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
+lst_accu_stratified = []
+
+#Baseline correction
+baseline = BaselineCorrection().rubberband_baseline(X)
+X = X - baseline
+
+#Soften each sample with Savitzky-Golay filter
+#X = BaselineCorrection().savgol_filter(X)
+
+# Normalize data
+normalizer = Normalization()
+X = normalizer.peak_normalization(X, 1660.0, 1630.0)
+#X = normalizer.mean_normalization(X)
+
+# Trucate to biologically relevant range
+truncator = WavenumberTruncator()
+X = truncator.trucate_range(X, 3050.0, 850.0)
+
+models_list = ['XGBoost', 'Suport Vector Machine (RBF)']
+xgb_model = XGBModel()
+svm_model = SVMRBFModel()
+
+for model in models_list:
+
+    for train_index, test_index in skf.split(X, y):
+        X_train_fold, X_test_fold = X[train_index], X[test_index]
+        y_train_fold, y_test_fold = y[train_index], y[test_index]
+
+        if model == 'XGBoost':
+            eval_metrics = xgb_model.xgb_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
+        elif model == 'Suport Vector Machine (RBF)':
+            eval_metrics = svm_model.svm_rbf_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
+
+        lst_accu_stratified.append(eval_metrics)
+
+    avg_metrics = np.mean(lst_accu_stratified, axis=0)
+    std_metrics = np.std(lst_accu_stratified, axis=0)
+
+    print(f"\nModel: {model}")
+    print(f"Accuracy: {avg_metrics[0]:.4f} ± {std_metrics[0]:.4f}")
+    print(f"Precision: {avg_metrics[1]:.4f} ± {std_metrics[1]:.4f}")
+    print(f"Recall (Sensitivity): {avg_metrics[2]:.4f} ± {std_metrics[2]:.4f}")
+    print(f"Specificity: {avg_metrics[3]:.4f} ± {std_metrics[3]:.4f}")
+    print(f"F1 Score: {avg_metrics[4]:.4f} ± {std_metrics[4]:.4f}")

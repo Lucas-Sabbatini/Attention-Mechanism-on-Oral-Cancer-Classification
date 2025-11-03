@@ -38,9 +38,9 @@ sample_polynomial = sample - baseline_polynomial
 # Create plot with all methods overlapped
 plt.figure(figsize=(12, 6))
 plt.plot(wavenumbers, sample, color='black', linewidth=2.5, label='Original', alpha=0.8)
-plt.plot(wavenumbers, sample_asls, color='blue', linewidth=1.5, label='AsLS Corrected', alpha=0.9)
-plt.plot(wavenumbers, sample_rubberband, color='green', linewidth=1.5, label='Rubberband Corrected', alpha=0.9)
-plt.plot(wavenumbers, sample_polynomial, color='red', linewidth=1.5, label='Polynomial Corrected', alpha=0.9)
+plt.plot(wavenumbers, sample_asls, color='blue', linewidth=1.5, label='AsLS', alpha=0.9)
+plt.plot(wavenumbers, sample_rubberband, color='green', linewidth=1.5, label='Rubberband', alpha=0.9)
+plt.plot(wavenumbers, sample_polynomial, color='red', linewidth=1.5, label='Polynomial', alpha=0.9)
 
 
 plt.title(f"Baseline Correction Methods — Sample {index} ({label_text})", fontsize=14)
