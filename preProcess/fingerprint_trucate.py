@@ -69,6 +69,17 @@ class WavenumberTruncator:
         lower_line, _, _ = self.binary_search_closest(lower_bound)  
 
         return X[:, lower_line:upper_line + 1]
+    
+    def get_range_indices(self, lower_bound :int, upper_bound :int ):
+        """
+        Get the line indices corresponding to the wavenumber range [lower_bound, upper_bound].
+        Remember all the metrics are in reciprocal centimeter (DESC order). 
+        So the lower_bound is actually larger than upper_bound.
+        """
+        upper_line, _, _ = self.binary_search_closest(upper_bound)  
+        lower_line, _, _ = self.binary_search_closest(lower_bound)  
+
+        return lower_line, upper_line
         
         
 # Usage example

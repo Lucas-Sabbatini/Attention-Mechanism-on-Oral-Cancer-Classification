@@ -24,6 +24,7 @@ The dataset is protected by the Federal University of Uberlândia, and therefore
 Spectroscopy data can suffer several kinds of distorsion, such as radiation scattering, absorption by the supporting substrate, fluctuations in data acquisition conditions, and instrumental instabilities can compromise the accuracy of absorbance values. To mitigate these effects, baseline correction is applied resulting in a purer and more interpretable signal, enabling the precise determination of spectral parameters. 
 
 ![Different Baseline Correction Methos](./ploting/img/baseline_corrections_comparison_sample_0.png)
+![Baseline Estimate Methods Overview](./ploting/img/baseline_estimate_comparison_sample_0.png)
 
 In this project we are willing to evaluate three different baseline correction algorithims:
 1. **Polynomial baseline correction**: A Polynomial function is fitted to the spectrum and subtracted to remove baseline drift.

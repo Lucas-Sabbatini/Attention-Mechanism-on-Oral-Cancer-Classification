@@ -20,7 +20,7 @@ skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
 lst_accu_stratified = []
 
 #Baseline correction
-baseline = BaselineCorrection().rubberband_baseline(X)
+baseline = BaselineCorrection().asls_baseline(X)
 X = X - baseline
 
 #Soften each sample with Savitzky-Golay filter

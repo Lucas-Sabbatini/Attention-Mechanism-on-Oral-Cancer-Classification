@@ -25,31 +25,22 @@ baseline_corrector = BaselineCorrection()
 
 # AsLS baseline correction
 baseline_asls = baseline_corrector.asls_baseline(sample)
-sample_asls = sample - baseline_asls
 
 # Rubberband baseline correction
 baseline_rubberband = baseline_corrector.rubberband_baseline(sample)
-sample_rubberband = sample - baseline_rubberband
 
 # Polynomial baseline correction
 baseline_polynomial = baseline_corrector.polynomial_baseline(sample)
-sample_polynomial = sample - baseline_polynomial
 
 # Create plot with all methods overlapped
 plt.figure(figsize=(12, 6))
 plt.plot(wavenumbers, sample, color='black', linewidth=2.5, label='Original', alpha=0.8)
-plt.plot(wavenumbers, sample_asls, color='blue', linewidth=1.5, label='AsLS', alpha=0.9)
-plt.plot(wavenumbers, sample_rubberband, color='green', linewidth=1.5, label='Rubberband', alpha=0.9)
-plt.plot(wavenumbers, sample_polynomial, color='red', linewidth=1.5, label='Polynomial', alpha=0.9)
-
-# Add vertical lines at specific wavenumbers
-plt.axvline(x=3050, color='gray', linestyle='--', linewidth=1, alpha=0.7)
-plt.axvline(x=2800, color='gray', linestyle='--', linewidth=1, alpha=0.7)
-plt.axvline(x=1800, color='gray', linestyle='--', linewidth=1, alpha=0.7)
-plt.axvline(x=900, color='gray', linestyle='--', linewidth=1, alpha=0.7)
+plt.plot(wavenumbers, baseline_asls, color='blue', linewidth=1.5, label='AsLS', alpha=0.9)
+plt.plot(wavenumbers, baseline_rubberband, color='green', linewidth=1.5, label='Rubberband', alpha=0.9)
+plt.plot(wavenumbers, baseline_polynomial, color='red', linewidth=1.5, label='Polynomial', alpha=0.9)
 
 
-plt.title(f"Baseline Correction Methods — Sample {index} ({label_text})", fontsize=14)
+plt.title(f"Baseline Estimates Methods — Sample {index} ({label_text})", fontsize=14)
 plt.xlabel("Wavenumber (cm⁻¹)", fontsize=12)
 plt.ylabel("Intensity", fontsize=12)
 plt.xlim(4000, 500)
@@ -57,6 +48,6 @@ plt.legend(loc='best', fontsize=10)
 plt.grid(True, linestyle="--", alpha=0.5)
 plt.tight_layout()
 
-output_path = Path(__file__).parent / "img" / f"baseline_corrections_comparison_sample_{index}.png"
+output_path = Path(__file__).parent / "img" / f"baseline_estimate_comparison_sample_{index}.png"
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
 plt.close()
