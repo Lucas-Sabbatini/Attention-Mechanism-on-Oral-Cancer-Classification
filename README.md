@@ -68,7 +68,6 @@ The following tables show the performance of XGBoost and SVM-RBF models across d
 | Rubberband (No SavGol) | 0.6024 ± 0.1300 | 0.6733 ± 0.1517 | 0.7750 ± 0.1750 | 0.3833 ± 0.3078 | 0.6960 ± 0.0951 |
 | **AsLS (No SavGol)** | **0.7048 ± 0.1829** | **0.7367 ± 0.1636** | **0.8167 ± 0.1658** | **0.5333 ± 0.2963** | **0.7667 ± 0.1462** |
 | Polynomial | 0.5595 ± 0.1252 | 0.6367 ± 0.1394 | 0.6667 ± 0.1581 | 0.3833 ± 0.3167 | 0.6400 ± 0.1118 |
-| AsLS | 0.4667 ± 0.1393 | 0.5583 ± 0.1902 | 0.6083 ± 0.2175 | 0.2500 ± 0.3096 | 0.5636 ± 0.1561 |
 
 #### Support Vector Machine (RBF Kernel)
 
@@ -78,9 +77,15 @@ The following tables show the performance of XGBoost and SVM-RBF models across d
 | Rubberband (No SavGol) | 0.6024 ± 0.1002 | 0.6379 ± 0.1198 | 0.8875 ± 0.1672 | 0.1917 ± 0.2900 | 0.7232 ± 0.0789 |
 | **AsLS (No SavGol)** | **0.6536 ± 0.1447** | **0.6695 ± 0.1396** | **0.9083 ± 0.1488** | **0.2667 ± 0.3391** | **0.7585 ± 0.1083** |
 | Polynomial | 0.5810 ± 0.0994 | 0.6195 ± 0.1077 | 0.8333 ± 0.2007 | 0.1917 ± 0.2947 | 0.6952 ± 0.1014 |
-| AsLS | 0.5345 ± 0.1261 | 0.5804 ± 0.1420 | 0.8042 ± 0.2490 | 0.1250 ± 0.2521 | 0.6569 ± 0.1479 |
 
-**Key Findings:**
+### TabPFN V2 Classifier
+
+| Preprocessing Pipeline | Accuracy | Precision | Recall (Sensitivity) | Specificity | F1 Score |
+|------------------------|----------|-----------|----------------------|-------------|----------|
+| Raw (No Normalization) | 0.6226 ± 0.1140 | 0.6562 ± 0.1100 | 0.8625 ± 0.1850 | 0.2583 ± 0.3139 | 0.7288 ± 0.0920 |
+| Rubberband (No SavGol) | 0.6032 ± 0.1018 | 0.6281 ± 0.1109 | 0.9167 ± 0.1491 | 0.1444 ± 0.2608 | 0.7309 ± 0.0788 |
+| AsLS (No SavGol) | 0.6079 ± 0.1648 | 0.6443 ± 0.1573 | 0.8556 ± 0.1924 | 0.2389 ± 0.3352 | 0.7192 ± 0.1319 |
+| Polynomial | 0.5841 ± 0.1059 | 0.6135 ± 0.1033 | 0.8722 ± 0.1822 | 0.1444 ± 0.2643 | 0.7080 ± 0.0988 |
 - **Raw data without normalization** achieves the best performance across both models
 - XGBoost shows better balance between sensitivity and specificity compared to SVM-RBF
 - SVM-RBF achieves higher recall but lower specificity, indicating bias toward the positive class
