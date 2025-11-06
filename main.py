@@ -7,6 +7,7 @@ from preProcess.normalization import Normalization
 from models.model_xgb import XGBModel
 from models.model_svm import SVMRBFModel
 from models.model_tabpfn import TabPFNModel
+from models.model_catboost import CatBoostModel
 
 dataset_path = "dataset_cancboca.dat"
 
@@ -21,25 +22,26 @@ skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
 lst_accu_stratified = []
 
 #Baseline correction
-#baseline = BaselineCorrection().polynomial_baseline(X)
-#X = X - baseline
+baseline = BaselineCorrection().asls_baseline(X)
+X = X - baseline
 
 #Soften each sample with Savitzky-Golay filter
-X = BaselineCorrection().savgol_filter(X)
+#X = BaselineCorrection().savgol_filter(X)
 
 # Normalize data
 normalizer = Normalization()
-#X = normalizer.peak_normalization(X, 1660.0, 1630.0)
+X = normalizer.peak_normalization(X, 1660.0, 1630.0)
 #X = normalizer.mean_normalization(X)
 
 # Trucate to biologically relevant range
 truncator = WavenumberTruncator()
 X = truncator.trucate_range(X, 3050.0, 850.0)
 
-models_list = ['XGBoost', 'Suport Vector Machine (RBF)', 'TabPFN V2']
+models_list = ['XGBoost', 'Suport Vector Machine (RBF)', 'TabPFN V2', 'CatBoost']
 xgb_model = XGBModel()
 svm_model = SVMRBFModel()
 tabpfn_model = TabPFNModel()
+catboost_model = CatBoostModel()
 
 for model in models_list:
 
@@ -53,6 +55,8 @@ for model in models_list:
             eval_metrics = svm_model.svm_rbf_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
         elif model == 'TabPFN V2':
             eval_metrics = tabpfn_model.tabpfn_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
+        elif model == 'CatBoost':
+            eval_metrics = catboost_model.catboost_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
 
         lst_accu_stratified.append(eval_metrics)
 

@@ -7,3 +7,5 @@ __pycache__/
 *.pyd
 *.swp
 *.swo
+
+catboost_info/
