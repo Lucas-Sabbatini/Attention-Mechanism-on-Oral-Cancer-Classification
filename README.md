@@ -78,11 +78,11 @@ The following tables show the performance of XGBoost and SVM-RBF models across d
 | **AsLS (No SavGol)** | **0.6536 ± 0.1447** | **0.6695 ± 0.1396** | **0.9083 ± 0.1488** | **0.2667 ± 0.3391** | **0.7585 ± 0.1083** |
 | Polynomial | 0.5810 ± 0.0994 | 0.6195 ± 0.1077 | 0.8333 ± 0.2007 | 0.1917 ± 0.2947 | 0.6952 ± 0.1014 |
 
-### TabPFN V2 Classifier
+### Tabular Prior-data Fitted Network V2 Classifier
 
 | Preprocessing Pipeline | Accuracy | Precision | Recall (Sensitivity) | Specificity | F1 Score |
 |------------------------|----------|-----------|----------------------|-------------|----------|
-| Raw (No Normalization) | 0.6226 ± 0.1140 | 0.6562 ± 0.1100 | 0.8625 ± 0.1850 | 0.2583 ± 0.3139 | 0.7288 ± 0.0920 |
+| Raw (No Normalization) | 0.6159 ± 0.0991 | 0.6383 ± 0.0989 | 0.9083 ± 0.1644 | 0.1722 ± 0.2838 | 0.7360 ± 0.0800 |
 | Rubberband (No SavGol) | 0.6032 ± 0.1018 | 0.6281 ± 0.1109 | 0.9167 ± 0.1491 | 0.1444 ± 0.2608 | 0.7309 ± 0.0788 |
 | AsLS (No SavGol) | 0.6079 ± 0.1648 | 0.6443 ± 0.1573 | 0.8556 ± 0.1924 | 0.2389 ± 0.3352 | 0.7192 ± 0.1319 |
 | Polynomial | 0.5841 ± 0.1059 | 0.6135 ± 0.1033 | 0.8722 ± 0.1822 | 0.1444 ± 0.2643 | 0.7080 ± 0.0988 |
