@@ -86,9 +86,6 @@ The following tables show the performance of XGBoost and SVM-RBF models across d
 | Rubberband (No SavGol) | 0.6032 ± 0.1018 | 0.6281 ± 0.1109 | 0.9167 ± 0.1491 | 0.1444 ± 0.2608 | 0.7309 ± 0.0788 |
 | AsLS (No SavGol) | 0.6079 ± 0.1648 | 0.6443 ± 0.1573 | 0.8556 ± 0.1924 | 0.2389 ± 0.3352 | 0.7192 ± 0.1319 |
 | Polynomial | 0.5841 ± 0.1059 | 0.6135 ± 0.1033 | 0.8722 ± 0.1822 | 0.1444 ± 0.2643 | 0.7080 ± 0.0988 |
-- **Raw data without normalization** achieves the best performance across both models
-- XGBoost shows better balance between sensitivity and specificity compared to SVM-RBF
-- SVM-RBF achieves higher recall but lower specificity, indicating bias toward the positive class
 
 ### CatBoost Classifier
 
