@@ -37,7 +37,7 @@ X = normalizer.peak_normalization(X, 1660.0, 1630.0)
 truncator = WavenumberTruncator()
 X = truncator.trucate_range(X, 3050.0, 850.0)
 
-models_list = ['XGBoost', 'Suport Vector Machine (RBF)', 'TabPFN V2', 'CatBoost']
+models_list = ['CatBoost']
 xgb_model = XGBModel()
 svm_model = SVMRBFModel()
 tabpfn_model = TabPFNModel()

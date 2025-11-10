@@ -16,7 +16,7 @@ The dataset is protected by the Federal University of Uberlândia, and therefore
 - **Input**: Spectroscopic data with wavenumber measurements
 - **Output**: Binary classification (-1: non-cancerous, 1: cancerous)
 - **Features**: Spectral intensities across different wavenumbers
-- **Class distribution**: Cancerous (26 samples) and Non-cancerous (39 samples)
+- **Class distribution**: Cancerous (39 samples) and Non-cancerous (26 samples)
 
 ## Preprocessing Pipeline
 
@@ -60,7 +60,7 @@ We applied Stratified k-fold validation with k=10 to ensure robust evaluation of
 
 The following tables show the performance of XGBoost and SVM-RBF models across different preprocessing pipelines using 10-fold stratified cross-validation:
 
-#### XGBoost Classifier
+### XGBoost Classifier
 
 | Preprocessing Pipeline | Accuracy | Precision | Recall (Sensitivity) | Specificity | F1 Score |
 |------------------------|----------|-----------|----------------------|-------------|----------|
@@ -69,7 +69,7 @@ The following tables show the performance of XGBoost and SVM-RBF models across d
 | **AsLS (No SavGol)** | **0.7048 ± 0.1829** | **0.7367 ± 0.1636** | **0.8167 ± 0.1658** | **0.5333 ± 0.2963** | **0.7667 ± 0.1462** |
 | Polynomial | 0.5595 ± 0.1252 | 0.6367 ± 0.1394 | 0.6667 ± 0.1581 | 0.3833 ± 0.3167 | 0.6400 ± 0.1118 |
 
-#### Support Vector Machine (RBF Kernel)
+### Support Vector Machine (RBF Kernel)
 
 | Preprocessing Pipeline | Accuracy | Precision | Recall (Sensitivity) | Specificity | F1 Score |
 |------------------------|----------|-----------|----------------------|-------------|----------|
@@ -90,6 +90,14 @@ The following tables show the performance of XGBoost and SVM-RBF models across d
 - XGBoost shows better balance between sensitivity and specificity compared to SVM-RBF
 - SVM-RBF achieves higher recall but lower specificity, indicating bias toward the positive class
 
+### CatBoost Classifier
+
+| Preprocessing Pipeline | Accuracy | Precision | Recall (Sensitivity) | Specificity | F1 Score |
+|------------------------|----------|-----------|----------------------|-------------|----------|
+| Raw (No Normalization) | 0.6238 ± 0.2451 | 0.6917 ± 0.2243 | 0.7083 ± 0.2562 | 0.5000 ± 0.3249 | 0.6838 ± 0.2208 |
+| Rubberband (No SavGol) | 0.6571 ± 0.2035 | 0.6900 ± 0.1744 | 0.7750 ± 0.2358 | 0.4833 ± 0.2930 | 0.7175 ± 0.1915 |
+| **AsLS (No SavGol)** | **0.7238 ± 0.1789** | **0.8100 ± 0.1855** | **0.7667 ± 0.1780** | **0.6667 ± 0.3249** | **0.7702 ± 0.1425** |
+| Polynomial | 0.6167 ± 0.2155 | 0.7050 ± 0.2241 | 0.6917 ± 0.1865 | 0.5167 ± 0.3686 | 0.6845 ± 0.1774 |
 
 ## Installation
 

@@ -9,3 +9,5 @@ __pycache__/
 *.swo
 
 catboost_info/
+generate_results_table.py
+results_tables.md
