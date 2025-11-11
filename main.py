@@ -6,11 +6,13 @@ import os
 from preProcess.baseline_correction import BaselineCorrection
 from preProcess.fingerprint_trucate import WavenumberTruncator
 from preProcess.normalization import Normalization
+
 from models.model_xgb import XGBModel
 from models.model_svm import SVMRBFModel
 from models.model_tabpfn import TabPFNModel
 from models.model_catboost import CatBoostModel
 from models.model_realmlp import RealMLPModel
+from models.model_tabm import TabMModel
 
 # Suppress warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
@@ -47,12 +49,13 @@ X = normalizer.peak_normalization(X, 1660.0, 1630.0)
 truncator = WavenumberTruncator()
 X = truncator.trucate_range(X, 3050.0, 850.0)
 
-models_list = ['RealMLP']
+models_list = ['TabM']
 xgb_model = XGBModel()
 svm_model = SVMRBFModel()
 tabpfn_model = TabPFNModel()
 catboost_model = CatBoostModel()
 realmlp_model = RealMLPModel()
+tabm_model = TabMModel()
 
 for model in models_list:
 
@@ -70,6 +73,8 @@ for model in models_list:
             eval_metrics = catboost_model.catboost_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
         elif model == 'RealMLP':
             eval_metrics = realmlp_model.realmlp_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
+        elif model == 'TabM':
+            eval_metrics = tabm_model.tabm_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
 
         lst_accu_stratified.append(eval_metrics)
 
