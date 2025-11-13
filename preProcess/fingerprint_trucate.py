@@ -80,8 +80,13 @@ class WavenumberTruncator:
         lower_line, _, _ = self.binary_search_closest(lower_bound)  
 
         return lower_line, upper_line
-        
-        
+    
+    def get_wavenumbers_in_range(self, lower_bound :int, upper_bound :int ):
+        lower_index, upper_index = self.get_range_indices(lower_bound, upper_bound)
+        wavenumbers = np.loadtxt(self.filepath)
+
+        return wavenumbers[lower_index:upper_index + 1]
+
 # Usage example
 if __name__ == "__main__":
     # Initialize with your file

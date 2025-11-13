@@ -37,3 +37,8 @@ class CatBoostModel:
         f1 = f1_score(y_test_fold, y_pred)
 
         return (acc, prec, rec, esp, f1)
+    
+    def get_feature_importances(self, X: np.array, y: np.array) -> np.array:
+        model = CatBoostClassifier(**self.params)
+        model.fit(X, y)
+        return model.get_feature_importance()

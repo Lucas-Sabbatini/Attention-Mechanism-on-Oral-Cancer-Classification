@@ -58,7 +58,7 @@ We applied Stratified k-fold validation with k=10 to ensure robust evaluation of
 
 ### Preprocessing Pipeline Comparison
 
-The following tables show the performance of XGBoost and SVM-RBF models across different preprocessing pipelines using 10-fold stratified cross-validation:
+The following tables show the performance of several models across different preprocessing pipelines using 10-fold stratified cross-validation:
 
 ### XGBoost Classifier
 
@@ -105,6 +105,16 @@ The following tables show the performance of XGBoost and SVM-RBF models across d
 | **AsLS (No SavGol)** | **0.6690 ± 0.1585** | **0.6855 ± 0.1480** | **0.9000 ± 0.1225** | **0.3167 ± 0.3532** | **0.7686 ± 0.1075** |
 | Polynomial | 0.5810 ± 0.1343 | 0.5948 ± 0.0863 | 0.9167 ± 0.1708 | 0.0667 ± 0.1333 | 0.7182 ± 0.1135 |
 
+## Postprocessing and Feature Importance
+To interpret the model's decisions, we analyzed feature importance using the CatBoost classifier. The bar plot below illustrates how each wavenumber contributed to the model's predictions. Each bar represents the mean importance of a specific wavelenghth across each of the 10 folds in the stratified k-fold validation.
+
+![CatBoost Feature Importance](./ploting/img/catboost_features_importance.png)
+
+As observed, the highest importance features are concentrated in specific wavenumber regions:
+1. **Around 2806.855 cm⁻¹**: This peak is often associated with 𝐶 − 𝐻, −𝐶𝐻3, −𝐶𝐻2  stretching vibrations, which are indicative of lipid content in biological tissues.
+2. **Around 910.31 cm⁻¹**: This region contains a myriad of absorption peaks that arise from a complex combination of double-bond stretching vibrations (such as 𝐶 = 𝑂 and 𝐶 = 𝐶) and a variety of single-bond bending vibrations. This overlap of hundreds of vibrational modes from all major biomolecules creates a unique and highly specific pattern that reflects the overall biochemical composition of a cell or tissue.
+
+Attributing high importance to these wavenumbers suggests that the model is effectively leveraging key biochemical signatures relevant to oral cancer classification.
 ## Installation
 
 1. Clone the repository
@@ -134,18 +144,23 @@ pip install -r requirements.txt
 ### Using Preprocessing Components
 
 ```python
-from preProcess.savitzky_filter import SavitzkyFilter
+from preProcess.baseline_correction import BaselineCorrection
 from preProcess.fingerprint_trucate import WavenumberTruncator
 from preProcess.normalization import Normalization
 
-# Apply Savitzky-Golay filter
-filtered_data = SavitzkyFilter().buildFilter(X_data)
+# Apply Savitzky-Golay filter (smoothing)
+baseline_corrector = BaselineCorrection()
+filtered_data = baseline_corrector.savgol_filter(X_data)
 
-# Truncate wavenumber range
+# Apply baseline correction (AsLS method)
+baseline = baseline_corrector.asls_baseline(X_data)
+corrected_data = X_data - baseline
+
+# Truncate wavenumber range (biologically relevant region)
 truncator = WavenumberTruncator()
-truncated_data = truncator.trucate_range(3050.0, 850.0, X_data)
+truncated_data = truncator.trucate_range(X_data, lower_bound=3050.0, upper_bound=850.0)
 
-# Normalize data
+# Normalize data (Amidae-I peak normalization)
 normalizer = Normalization()
-normalized_data = normalizer.normalize_data(X_data)
+normalized_data = normalizer.peak_normalization(X_data, lower_bound=1660.0, upper_bound=1630.0)
 ```
