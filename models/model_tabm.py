@@ -5,13 +5,13 @@ from tabm import TabM
 from copy import deepcopy
 from typing import Optional
 from torch import nn, Tensor
+from rtdl_num_embeddings import PeriodicEmbeddings
 
 
-
-class TabMModel():
-    def __init__(self, share_training_batches: bool = True, lr: float = 2e-3, 
-                 weight_decay: float = 3e-4, n_epochs: int = 100, 
-                 batch_size: int = 32, patience: int = 16, random_state: int = 0):
+class TabMModel:
+    def __init__(self, share_training_batches: bool = False, lr: float = 0.005, 
+                 weight_decay: float = 0.001, n_epochs: int = 75, 
+                 batch_size: int = 8, patience: int = 25, random_state: int = 0):
         """
         Initialize TabM model for binary classification
         
@@ -42,20 +42,32 @@ class TabMModel():
         self.n_epochs = n_epochs
         self.batch_size = batch_size
         self.patience = patience
+        self.random_state = random_state
         
-        # Set random seeds
-        torch.manual_seed(random_state)
-        np.random.seed(random_state)
+        # Set random seeds for reproducibility
+        self._set_seeds(random_state)
 
         self.model = TabM.make(
             n_num_features=self.num_features,
             d_out=self.d_out,
+            num_embeddings=PeriodicEmbeddings(self.num_features,lite=False)
         ).to(self.device)
 
         self.gradient_clipping_norm: Optional[float] = 1.0
         self.lr = lr
         self.weight_decay = weight_decay
         self.base_loss_fn = nn.functional.cross_entropy
+
+    def _set_seeds(self, seed: int):
+        """Set all random seeds for reproducibility"""
+        torch.manual_seed(seed)
+        np.random.seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)
+            # Make CUDA operations deterministic
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
 
     def forward(self, X: np.array) -> np.array:
         """
@@ -89,13 +101,13 @@ class TabMModel():
             
             return y_pred_class.cpu().numpy()
     
-    def loss_fn(self, y_pred: Tensor, y_true: Tensor) -> Tensor:
+    def loss_fn(self, y_pred: Tensor, y_true: Tensor, share_training_batches = None) -> Tensor:
         # TabM produces k predictions. Each of them must be trained separately.
-
+        share_training_batches = self.share_training_batches if share_training_batches is None else share_training_batches
         # Classification: (batch_size, k, n_classes) -> (batch_size * k, n_classes)
         y_pred = y_pred.flatten(0, 1)
 
-        if self.share_training_batches:
+        if share_training_batches:
             # (batch_size,) -> (batch_size * k,)
             y_true = y_true.repeat_interleave(self.model.backbone.k)
         else:
@@ -107,6 +119,9 @@ class TabMModel():
 
     def train_model(self, X_train: np.array, y_train: np.array, X_val: np.array, y_val: np.array):
 
+        # Set seeds before reinitializing to ensure reproducibility
+        self._set_seeds(self.random_state)
+        
         # Reinitialize model weights for each fold to avoid data leakage
         self.model = TabM.make(
             n_num_features=self.num_features,
@@ -132,17 +147,21 @@ class TabMModel():
         best_model_state = None
         remaining_patience = self.patience
         
+        # Create a generator with fixed seed for reproducible batch shuffling
+        generator = torch.Generator(device=self.device)
+        generator.manual_seed(self.random_state)
+        
         for epoch in range(self.n_epochs):
             self.model.train()
             epoch_losses = []
             
-            # Create batches
-            indices = torch.randperm(train_size, device=self.device)
+            # Create batches with deterministic randomness
+            indices = torch.randperm(train_size, device=self.device, generator=generator)
             batches = (
                 indices.split(self.batch_size)
                 if self.share_training_batches
                 else (
-                    torch.rand((train_size, self.model.k), device=self.device)
+                    torch.rand((train_size, self.model.k), device=self.device, generator=generator)
                     .argsort(dim=0)
                     .split(self.batch_size, dim=0)
                 )
@@ -184,7 +203,7 @@ class TabMModel():
             with torch.no_grad():
                 with torch.autocast(self.device.type, enabled=self.amp_enabled, dtype=self.amp_dtype):
                     y_val_pred = self.model(X_val_tensor)
-                    val_loss = self.loss_fn(y_val_pred, y_val_tensor).item()
+                    val_loss = self.loss_fn(y_val_pred, y_val_tensor, True).item()
             
             # Early stopping check
             if val_loss < best_val_loss:
