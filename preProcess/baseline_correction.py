@@ -4,9 +4,8 @@ from pybaselines import Baseline
 
 
 class BaselineCorrection:
-
-    def savgol_filter(self, X : np.ndarray,  window_length=11, poly_order=3) -> np.ndarray:
-        return savgol_filter(X, window_length, poly_order)
+    def savgol_filter(self, X : np.ndarray,  window_length=3, poly_order=2, deriv=2) -> np.ndarray:
+        return savgol_filter(X, window_length, poly_order, deriv=deriv)
     
     def asls_baseline(self, X : np.ndarray, lam=1e7, p=0.01, max_iter=1) -> np.ndarray:
         baseline_fitter = Baseline()

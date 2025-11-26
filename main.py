@@ -37,19 +37,20 @@ lst_accu_stratified = []
 baseline = BaselineCorrection().asls_baseline(X)
 X = X - baseline
 
-#Soften each sample with Savitzky-Golay filter
-#X = BaselineCorrection().savgol_filter(X)
-
 # Normalize data
 normalizer = Normalization()
 X = normalizer.peak_normalization(X, 1660.0, 1630.0)
 #X = normalizer.mean_normalization(X)
 
+# Smooth data
+X = BaselineCorrection().savgol_filter(X)
+
+
 # Trucate to biologically relevant range
 truncator = WavenumberTruncator()
 X = truncator.trucate_range(X, 3050.0, 850.0)
 
-models_list = ['TabM']
+models_list = ['CatBoost']
 xgb_model = XGBModel()
 svm_model = SVMRBFModel()
 tabpfn_model = TabPFNModel()
@@ -86,4 +87,4 @@ for model in models_list:
     print(f"Precision: {avg_metrics[1]:.4f} ± {std_metrics[1]:.4f}")
     print(f"Recall (Sensitivity): {avg_metrics[2]:.4f} ± {std_metrics[2]:.4f}")
     print(f"Specificity: {avg_metrics[3]:.4f} ± {std_metrics[3]:.4f}")
-    print(f"F1 Score: {avg_metrics[4]:.4f} ± {std_metrics[4]:.4f}")
+    print(f"Mean(SE,SP): {((avg_metrics[2]+avg_metrics[3])/2):.4f} ± {((std_metrics[2]+std_metrics[3])/2):.4f}")
