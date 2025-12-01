@@ -13,6 +13,7 @@ from models.model_tabpfn import TabPFNModel
 from models.model_catboost import CatBoostModel
 from models.model_realmlp import RealMLPModel
 from models.model_tabm import TabMModel
+from models.model_lightgbm import LightGBMModel
 
 # Suppress warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
@@ -50,13 +51,14 @@ X = BaselineCorrection().savgol_filter(X)
 truncator = WavenumberTruncator()
 X = truncator.trucate_range(X, 3050.0, 850.0)
 
-models_list = ['CatBoost']
+models_list = ['LightGBM']
 xgb_model = XGBModel()
 svm_model = SVMRBFModel()
 tabpfn_model = TabPFNModel()
 catboost_model = CatBoostModel()
 realmlp_model = RealMLPModel()
 tabm_model = TabMModel()
+lightgbm_model = LightGBMModel()
 
 for model in models_list:
 
@@ -76,6 +78,8 @@ for model in models_list:
             eval_metrics = realmlp_model.realmlp_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
         elif model == 'TabM':
             eval_metrics = tabm_model.tabm_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
+        elif model == 'LightGBM':
+            eval_metrics = lightgbm_model.lightgbm_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
 
         lst_accu_stratified.append(eval_metrics)
 
@@ -87,4 +91,10 @@ for model in models_list:
     print(f"Precision: {avg_metrics[1]:.4f} ± {std_metrics[1]:.4f}")
     print(f"Recall (Sensitivity): {avg_metrics[2]:.4f} ± {std_metrics[2]:.4f}")
     print(f"Specificity: {avg_metrics[3]:.4f} ± {std_metrics[3]:.4f}")
-    print(f"Mean(SE,SP): {((avg_metrics[2]+avg_metrics[3])/2):.4f} ± {((std_metrics[2]+std_metrics[3])/2):.4f}")
+    print(f"Mean(SE,SP): {avg_metrics[4]:.4f} ± {std_metrics[4]:.4f}")
+
+
+
+
+    #TODO:
+    # 1. Acho que essa parte do filtro savgol pode ser uma coisa a questionar o Murilo sobre.

@@ -1,4 +1,4 @@
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 import torch
 import numpy as np
 from tabm import TabM
@@ -243,6 +243,6 @@ class TabMModel:
         prec = precision_score(y_test_fold, y_pred, zero_division=0)
         rec = recall_score(y_test_fold, y_pred, zero_division=0)
         esp = recall_score(y_test_fold, y_pred, pos_label=0, zero_division=0)
-        f1 = f1_score(y_test_fold, y_pred, zero_division=0)
+        mean = np.mean([rec, esp])
 
-        return (acc, prec, rec, esp, f1)
+        return (acc, prec, rec, esp, mean)

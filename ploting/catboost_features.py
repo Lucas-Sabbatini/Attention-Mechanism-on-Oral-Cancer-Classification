@@ -57,7 +57,7 @@ print(f"Accuracy: {avg_metrics[0]:.4f} ± {std_metrics[0]:.4f}")
 print(f"Precision: {avg_metrics[1]:.4f} ± {std_metrics[1]:.4f}")
 print(f"Recall (Sensitivity): {avg_metrics[2]:.4f} ± {std_metrics[2]:.4f}")
 print(f"Specificity: {avg_metrics[3]:.4f} ± {std_metrics[3]:.4f}")
-print(f"F1 Score: {avg_metrics[4]:.4f} ± {std_metrics[4]:.4f}")
+print(f"Mean(SE,SP): {avg_metrics[4]:.4f} ± {std_metrics[4]:.4f}")
 
 
 fi = np.asarray(features_mean_importances)
