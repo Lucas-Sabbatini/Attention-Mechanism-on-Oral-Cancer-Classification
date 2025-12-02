@@ -44,7 +44,7 @@ X = normalizer.peak_normalization(X, 1660.0, 1630.0)
 #X = normalizer.mean_normalization(X)
 
 # Smooth data
-X = BaselineCorrection().savgol_filter(X)
+#X = BaselineCorrection().savgol_filter(X)
 
 
 # Trucate to biologically relevant range

@@ -105,6 +105,15 @@ The following tables show the performance of several models across different pre
 | **AsLS (No SavGol)** | **0.6690 ± 0.1585** | **0.6855 ± 0.1480** | **0.9000 ± 0.1225** | **0.3167 ± 0.3532** | **0.7686 ± 0.1075** |
 | Polynomial | 0.5810 ± 0.1343 | 0.5948 ± 0.0863 | 0.9167 ± 0.1708 | 0.0667 ± 0.1333 | 0.7182 ± 0.1135 |
 
+### LightGBM Classifier
+
+| Preprocessing Pipeline | Accuracy | Precision | Recall (Sensitivity) | Specificity | Mean(SE, SP) |
+|------------------------|----------|-----------|----------------------|-------------|-------------|
+| Raw (No Normalization) | 0.5500 ± 0.1658 | 0.6417 ± 0.1745 | 0.6917 ± 0.1493 | 0.3333 ± 0.3249 | 0.5125 ± 0.1826 |
+| Rubberband (No SavGol) | 0.5381 ± 0.1569 | 0.6133 ± 0.1439 | 0.6750 ± 0.2512 | 0.3833 ± 0.2693 | 0.5292 ± 0.1593 |
+| **AsLS (No SavGol)** | **0.7429 ± 0.1703** | **0.8350 ± 0.1803** | **0.7417 ± 0.1601** | **0.7500 ± 0.2713** | **0.7458 ± 0.1792** |
+| Polynomial | 0.4976 ± 0.1855 | 0.5967 ± 0.1963 | 0.5417 ± 0.2116 | 0.4333 ± 0.2906 | 0.4875 ± 0.1928 |
+
 ## Postprocessing and Feature Importance
 To interpret the model's decisions, we analyzed feature importance using the CatBoost classifier. The bar plot below illustrates how each wavenumber contributed to the model's predictions. Each bar represents the mean importance of a specific wavelenghth across each of the 10 folds in the stratified k-fold validation.
 
