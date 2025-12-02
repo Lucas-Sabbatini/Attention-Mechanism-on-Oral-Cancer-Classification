@@ -1,5 +1,6 @@
 *.dat
 .venv/
+*.txt
 
 __pycache__/
 *.pyc
@@ -11,3 +12,6 @@ __pycache__/
 catboost_info/
 generate_results_table.py
 results_tables.md
+optimize_savgol_params.py
+optimize_realmlp_params.py
+optimize_lightgbm_params.py
