@@ -3,11 +3,11 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score
 import numpy as np
 
 class RealMLPModel:
-    def __init__(self,device='cpu', random_state=1, n_cv=3, n_refit=1,
-                              n_epochs=462, batch_size=64, hidden_sizes=[64] * 2,
-                              val_metric_name='class_error',
+    def __init__(self,device='cpu', random_state=0, n_cv=2, n_refit=1,
+                              n_epochs=276, batch_size=128, hidden_sizes=[256] * 5,
+                              val_metric_name='cross_entropy',
                               use_ls=False,
-                              lr=0.000265730810446066, verbosity=0):
+                              lr=0.002120392342355239, verbosity=0):
         self.params = {
             'device': device,
             'random_state': random_state,

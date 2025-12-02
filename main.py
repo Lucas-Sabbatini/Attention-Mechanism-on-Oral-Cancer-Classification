@@ -51,7 +51,7 @@ X = normalizer.peak_normalization(X, 1660.0, 1630.0)
 truncator = WavenumberTruncator()
 X = truncator.trucate_range(X, 3050.0, 850.0)
 
-models_list = ['LightGBM']
+models_list = ['RealMLP']
 xgb_model = XGBModel()
 svm_model = SVMRBFModel()
 tabpfn_model = TabPFNModel()
