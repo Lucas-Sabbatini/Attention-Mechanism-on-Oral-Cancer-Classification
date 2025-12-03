@@ -93,8 +93,3 @@ for model in models_list:
     print(f"Specificity: {avg_metrics[3]:.4f} ± {std_metrics[3]:.4f}")
     print(f"Mean(SE,SP): {avg_metrics[4]:.4f} ± {std_metrics[4]:.4f}")
 
-
-
-
-    #TODO:
-    # 1. Acho que essa parte do filtro savgol pode ser uma coisa a questionar o Murilo sobre.

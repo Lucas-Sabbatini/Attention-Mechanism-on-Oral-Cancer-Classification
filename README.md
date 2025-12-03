@@ -31,11 +31,16 @@ In this project we are willing to evaluate three different baseline correction a
 2. **Rubberband**: A convex hull is constructed over the spectrum, and the baseline is estimated by connecting the lowest points of the convex hull.
 3. **Asymmetric least squares (ASLS)**: An iterative method that minimizes a cost function combining fidelity to the data and smoothness of the baseline, with an asymmetry parameter to handle positive peaks.
 
-### 2. **Wavenumber Truncation**: 
-Focuses analysis on the biological relevant spectral region (850-3050 cm⁻¹) in order to avoid noises and outliers from less informative regions.
-
-### 3. **Normalization**: 
+### 2. **Normalization**: 
 Standardizes data for model training, there are several normalization techniques available, like Min-Max Scaling, Mean Normalization but the most importat in this project is **Amidae-I** normalization.
+
+### 3. **Smoothing (Savitzky-Golay Filter)**: 
+Reduces noise while preserving important spectral features by fitting successive sub-sets of adjacent data points with a low-degree polynomial using linear least squares. 
+
+The first or second derivative of this filter can be computed to enhance peak resolution, ensuring relevant features while reducing noise.
+
+### 4. **Wavenumber Truncation**: 
+Focuses analysis on the biological relevant spectral region (850-3050 cm⁻¹) in order to avoid noises and outliers from less informative regions.
 
 Wich, normalizes each spectrum by its highest intensity value within the Amidae-I region (1660-1630 cm⁻¹).
 
@@ -62,12 +67,12 @@ The following tables show the performance of several models across different pre
 
 ### XGBoost Classifier
 
-| Preprocessing Pipeline | Accuracy | Precision | Recall (Sensitivity) | Specificity | F1 Score |
-|------------------------|----------|-----------|----------------------|-------------|----------|
-| Raw (No Normalization) | 0.6429 ± 0.1483 | 0.7100 ± 0.1234 | 0.7250 ± 0.1750 | 0.5167 ± 0.2522 | 0.7074 ± 0.1185 |
-| Rubberband (No SavGol) | 0.6024 ± 0.1300 | 0.6733 ± 0.1517 | 0.7750 ± 0.1750 | 0.3833 ± 0.3078 | 0.6960 ± 0.0951 |
-| **AsLS (No SavGol)** | **0.7048 ± 0.1829** | **0.7367 ± 0.1636** | **0.8167 ± 0.1658** | **0.5333 ± 0.2963** | **0.7667 ± 0.1462** |
-| Polynomial | 0.5595 ± 0.1252 | 0.6367 ± 0.1394 | 0.6667 ± 0.1581 | 0.3833 ± 0.3167 | 0.6400 ± 0.1118 |
+| Preprocessing Pipeline | Accuracy | Precision | Recall (Sensitivity) | Specificity | Mean(SE, SP) |
+|------------------------|----------|-----------|----------------------|-------------|-------------|
+| Raw (No Normalization) | 0.6381 ± 0.1925 | 0.7283 ± 0.1959 | 0.7250 ± 0.2358 | 0.5167 ± 0.3686 | 0.6208 ± 0.2095 |
+| Rubberband (No SavGol) | 0.6024 ± 0.1300 | 0.6733 ± 0.1517 | 0.7750 ± 0.1750 | 0.3833 ± 0.3078 | 0.5792 ± 0.1350 |
+| **AsLS (No SavGol)** | **0.7048 ± 0.1829** | **0.7367 ± 0.1636** | **0.8167 ± 0.1658** | **0.5333 ± 0.2963** | **0.6750 ± 0.1970** |
+| Polynomial | 0.5167 ± 0.1955 | 0.5671 ± 0.1468 | 0.6417 ± 0.2765 | 0.3167 ± 0.2291 | 0.4792 ± 0.1731 |
 
 ### Support Vector Machine (RBF Kernel)
 
