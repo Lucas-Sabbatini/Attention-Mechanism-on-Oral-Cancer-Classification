@@ -57,7 +57,7 @@ We applied Stratified k-fold validation with k=10 to ensure robust evaluation of
 - **Precision**: Proportion of positive identifications that were actually correct.
 - **Sensitivity (Recall)**: Proportion of actual positives that were correctly identified.
 - **Specificity**: Proportion of actual negatives that were correctly identified.
-- **F1-Score**: Harmonic mean of precision and recall, providing a balance between the two.
+- **Mean(SE,SP)**: Mean of recall and specificity, providing a balance between the two. Used especially in imbalanced datasets.
 
 ## Models
 
