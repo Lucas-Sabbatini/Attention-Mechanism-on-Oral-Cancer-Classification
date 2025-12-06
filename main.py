@@ -14,6 +14,7 @@ from models.model_catboost import CatBoostModel
 from models.model_realmlp import RealMLPModel
 from models.model_tabm import TabMModel
 from models.model_lightgbm import LightGBMModel
+from models.model import BaseClassifierModel
 
 # Suppress warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
@@ -51,7 +52,6 @@ X = normalizer.peak_normalization(X, 1660.0, 1630.0)
 truncator = WavenumberTruncator()
 X = truncator.trucate_range(X, 3050.0, 850.0)
 
-models_list = ['RealMLP']
 xgb_model = XGBModel()
 svm_model = SVMRBFModel()
 tabpfn_model = TabPFNModel()
@@ -60,26 +60,15 @@ realmlp_model = RealMLPModel()
 tabm_model = TabMModel()
 lightgbm_model = LightGBMModel()
 
+models_list: list[BaseClassifierModel] = [catboost_model]
+
 for model in models_list:
 
     for train_index, test_index in skf.split(X, y):
         X_train_fold, X_test_fold = X[train_index], X[test_index]
         y_train_fold, y_test_fold = y[train_index], y[test_index]
 
-        if model == 'XGBoost':
-            eval_metrics = xgb_model.xgb_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif model == 'Suport Vector Machine (RBF)':
-            eval_metrics = svm_model.svm_rbf_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif model == 'TabPFN V2':
-            eval_metrics = tabpfn_model.tabpfn_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif model == 'CatBoost':
-            eval_metrics = catboost_model.catboost_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif model == 'RealMLP':
-            eval_metrics = realmlp_model.realmlp_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif model == 'TabM':
-            eval_metrics = tabm_model.tabm_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif model == 'LightGBM':
-            eval_metrics = lightgbm_model.lightgbm_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
+        eval_metrics = model.evaluate(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
 
         lst_accu_stratified.append(eval_metrics)
 

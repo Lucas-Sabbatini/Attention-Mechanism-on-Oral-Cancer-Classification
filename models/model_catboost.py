@@ -2,7 +2,9 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score
 import numpy as np
 from catboost import CatBoostClassifier, Pool
 
-class CatBoostModel:
+from models.model import BaseClassifierModel
+
+class CatBoostModel(BaseClassifierModel):
     def __init__(self, depth=5, learning_rate=0.1, l2_leaf_reg=5, min_data_in_leaf=3,
                  iterations=500, bagging_temperature=0.5):
         self.params = {
@@ -18,7 +20,7 @@ class CatBoostModel:
             'border_count': 64
         }
 
-    def catboost_model(self, X_train_fold : np.array, X_test_fold : np.array, y_train_fold : np.array, y_test_fold : np.array):
+    def evaluate(self, X_train_fold : np.array, X_test_fold : np.array, y_train_fold : np.array, y_test_fold : np.array):
         
         # Create validation pool for early stopping
         eval_pool = Pool(X_test_fold, y_test_fold)

@@ -8,22 +8,8 @@ from preProcess.fingerprint_trucate import WavenumberTruncator
 from preProcess.normalization import Normalization
 
 from models.model_xgb import XGBModel
-from models.model_svm import SVMRBFModel
-from models.model_tabpfn import TabPFNModel
-from models.model_catboost import CatBoostModel
-from models.model_realmlp import RealMLPModel
-from models.model_tabm import TabMModel
-from models.model_lightgbm import LightGBMModel
 
 warnings.filterwarnings('ignore')
-
-xgb_model = XGBModel()
-svm_model = SVMRBFModel()
-tabpfn_model = TabPFNModel()
-catboost_model = CatBoostModel()
-realmlp_model = RealMLPModel()
-tabm_model = TabMModel()
-lightgbm_model = LightGBMModel()
 
 dataset_path = "dataset_cancboca.dat"
 dataset = np.loadtxt(dataset_path)
@@ -31,8 +17,7 @@ X_original = dataset[:, :-1]
 y = dataset[:, -1].astype(int)
 y = np.where(y == -1, 0, 1)
 N_TRIALS = 50
-MODEL = 'TabM'
-
+MODEL = XGBModel()
 
 def objective(trial):
     """
@@ -70,24 +55,8 @@ def objective(trial):
         X_train_fold, X_test_fold = X[train_index], X[test_index]
         y_train_fold, y_test_fold = y[train_index], y[test_index]
         
-        if MODEL == 'XGBoost':
-            eval_metrics = xgb_model.xgb_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif MODEL == 'Suport Vector Machine (RBF)':
-            eval_metrics = svm_model.svm_rbf_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif MODEL == 'TabPFN V2':
-            eval_metrics = tabpfn_model.tabpfn_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif MODEL == 'CatBoost':
-            eval_metrics = catboost_model.catboost_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif MODEL == 'RealMLP':
-            eval_metrics = realmlp_model.realmlp_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif MODEL == 'TabM':
-            eval_metrics = tabm_model.tabm_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-        elif MODEL == 'LightGBM':
-            eval_metrics = lightgbm_model.lightgbm_model(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
-
-        
+        eval_metrics = MODEL.evaluate(X_train_fold, X_test_fold, y_train_fold, y_test_fold)
         all_metrics.append(eval_metrics)
-    
     
     avg_metrics = np.mean(all_metrics, axis=0)
 

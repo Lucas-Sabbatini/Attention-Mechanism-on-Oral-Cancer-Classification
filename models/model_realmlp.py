@@ -2,7 +2,9 @@ from pytabkit import RealMLP_TD_Classifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 import numpy as np
 
-class RealMLPModel:
+from models.model import BaseClassifierModel
+
+class RealMLPModel(BaseClassifierModel):
     def __init__(self,device='cpu', random_state=0, n_cv=2, n_refit=1,
                               n_epochs=276, batch_size=128, hidden_sizes=[256] * 5,
                               val_metric_name='cross_entropy',
@@ -22,7 +24,7 @@ class RealMLPModel:
             'verbosity': verbosity
         }
 
-    def realmlp_model(self, X_train_fold : np.array, X_test_fold : np.array, y_train_fold : np.array, y_test_fold : np.array):
+    def evaluate(self, X_train_fold : np.array, X_test_fold : np.array, y_train_fold : np.array, y_test_fold : np.array):
         # Train RealMLP model
         model = RealMLP_TD_Classifier(**self.params)
         model.fit(X_train_fold, y_train_fold)

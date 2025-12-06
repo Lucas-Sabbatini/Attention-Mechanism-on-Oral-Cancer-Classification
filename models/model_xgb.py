@@ -2,8 +2,9 @@ import xgboost as xgb
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 import numpy as np
 
+from models.model import BaseClassifierModel
 
-class XGBModel:
+class XGBModel(BaseClassifierModel):
     def __init__(self, max_depth=4, eta=1, objective='binary:logistic', nthread=4, eval_metric=['auc'], num_round=10):
         self.params = {
             'max_depth': max_depth,
@@ -14,7 +15,7 @@ class XGBModel:
         }
         self.num_round = num_round
 
-    def xgb_model(self, X_train : np.array, X_test : np.array, y_train : np.array, y_test : np.array):
+    def evaluate(self, X_train : np.array, X_test : np.array, y_train : np.array, y_test : np.array):
         dtrain = xgb.DMatrix(X_train, label=y_train)
         dtest = xgb.DMatrix(X_test, label=y_test)
 

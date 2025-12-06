@@ -7,8 +7,9 @@ from typing import Optional
 from torch import nn, Tensor
 from rtdl_num_embeddings import PeriodicEmbeddings
 
+from models.model import BaseClassifierModel
 
-class TabMModel:
+class TabMModel(BaseClassifierModel):
     def __init__(self, share_training_batches: bool = False, lr: float = 0.005, 
                  weight_decay: float = 0.001, n_epochs: int = 75, 
                  batch_size: int = 8, patience: int = 25, random_state: int = 0):
@@ -222,7 +223,7 @@ class TabMModel:
 
 
 
-    def tabm_model(self, X_train_fold: np.array, X_test_fold: np.array, y_train_fold: np.array, y_test_fold: np.array):
+    def evaluate(self, X_train_fold: np.array, X_test_fold: np.array, y_train_fold: np.array, y_test_fold: np.array):
         # Split training data into train/val (80/20)
         val_size = max(int(len(X_train_fold) * 0.2), 1)
         train_size = len(X_train_fold) - val_size

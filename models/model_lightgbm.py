@@ -2,7 +2,9 @@ from lightgbm import LGBMClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 import numpy as np
 
-class LightGBMModel:
+from models.model import BaseClassifierModel
+
+class LightGBMModel(BaseClassifierModel):
     def __init__(self, random_state=0,
                  boosting_type='dart',
                  max_depth=3,
@@ -42,8 +44,7 @@ class LightGBMModel:
             'verbosity': verbosity
         }    
 
-    def lightgbm_model(self, X_train_fold : np.array, X_test_fold : np.array, y_train_fold : np.array, y_test_fold : np.array):
-        # Train LightGBM model
+    def evaluate(self, X_train_fold : np.array, X_test_fold : np.array, y_train_fold : np.array, y_test_fold : np.array):
         model = LGBMClassifier(**self.params)
         model.fit(X_train_fold, y_train_fold)
 
