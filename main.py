@@ -33,7 +33,6 @@ y = np.where(y == -1, 0, 1)
 
 #Stratified K-Fold Cross Validation
 skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
-lst_accu_stratified = []
 
 #Baseline correction
 baseline = BaselineCorrection().asls_baseline(X)
@@ -42,7 +41,6 @@ X = X - baseline
 # Normalize data
 normalizer = Normalization()
 X = normalizer.peak_normalization(X, 1660.0, 1630.0)
-#X = normalizer.mean_normalization(X)
 
 # Smooth data
 #X = BaselineCorrection().savgol_filter(X)
@@ -60,9 +58,10 @@ realmlp_model = RealMLPModel()
 tabm_model = TabMModel()
 lightgbm_model = LightGBMModel()
 
-models_list: list[BaseClassifierModel] = [catboost_model]
+models_list: list[BaseClassifierModel] = [tabpfn_model]
 
 for model in models_list:
+    lst_accu_stratified = []
 
     for train_index, test_index in skf.split(X, y):
         X_train_fold, X_test_fold = X[train_index], X[test_index]

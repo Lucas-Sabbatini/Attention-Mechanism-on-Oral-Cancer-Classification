@@ -5,7 +5,7 @@ import numpy as np
 from models.model import BaseClassifierModel
 
 class SVMRBFModel(BaseClassifierModel):
-    def __init__(self, C=1, gamma='scale'):
+    def __init__(self, C=823.303904, gamma='auto'):
         self.kernel = 'rbf'
         self.C = C
         self.gamma = gamma
