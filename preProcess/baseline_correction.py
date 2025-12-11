@@ -4,7 +4,7 @@ from pybaselines import Baseline
 
 
 class BaselineCorrection:
-    def savgol_filter(self, X : np.ndarray,  window_length=3, poly_order=2, deriv=0) -> np.ndarray:
+    def savgol_filter(self, X : np.ndarray,  window_length=13, poly_order=4, deriv=0) -> np.ndarray:
         return savgol_filter(X, window_length, poly_order, deriv=deriv)
     
     def asls_baseline(self, X : np.ndarray, lam=1e7, p=0.01, max_iter=1) -> np.ndarray:

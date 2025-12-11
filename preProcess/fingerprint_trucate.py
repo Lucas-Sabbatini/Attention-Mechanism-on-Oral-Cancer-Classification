@@ -70,11 +70,23 @@ class WavenumberTruncator:
 
         return X[:, lower_line:upper_line + 1]
     
+    def truncate_ranges(self,X:np.ndarray, ranges: list[(int,int)] ):
+        """
+        Truncate the dataset to only include wavenumbers within specified ranges.
+        Each range is a tuple (lower_bound, upper_bound).
+        """
+        indices = []
+        for lower_bound, upper_bound in ranges:
+            upper_line, _, _ = self.binary_search_closest(upper_bound)  
+            lower_line, _, _ = self.binary_search_closest(lower_bound)  
+            indices.extend(range(lower_line, upper_line + 1))
+        
+        indices = sorted(set(indices))  
+        return X[:, indices]
+    
     def get_range_indices(self, lower_bound :int, upper_bound :int ):
         """
         Get the line indices corresponding to the wavenumber range [lower_bound, upper_bound].
-        Remember all the metrics are in reciprocal centimeter (DESC order). 
-        So the lower_bound is actually larger than upper_bound.
         """
         upper_line, _, _ = self.binary_search_closest(upper_bound)  
         lower_line, _, _ = self.binary_search_closest(lower_bound)  
@@ -86,26 +98,3 @@ class WavenumberTruncator:
         wavenumbers = np.loadtxt(self.filepath)
 
         return wavenumbers[lower_index:upper_index + 1]
-
-# Usage example
-if __name__ == "__main__":
-    # Initialize with your file
-    searcher = WavenumberTruncator("wavenumbers_cancboca.dat")
-    
-    # Search for a specific wavenumber
-    target = 900.0
-    line_num, value, exact = searcher.binary_search_closest(target)
-    
-    print(f"Searching for: {target}")
-    print(f"Found at line: {line_num} (Starts at first line = 0)")
-    print(f"Value: {value}")
-    print(f"Exact match: {exact}")
-
-    # Example dataset
-    dataset = np.loadtxt("dataset_cancboca.dat")
-    X = dataset[:,:-1]
-    y = dataset[:,-1].astype(int)
-
-    # Truncate dataset to wavenumber range [1800, 900]
-    X_truncated = searcher.trucate_range(1800, 900, X)
-    print(f"Original shape: {X.shape}, Truncated shape: {X_truncated.shape}")

@@ -7,7 +7,7 @@ from preProcess.baseline_correction import BaselineCorrection
 from preProcess.fingerprint_trucate import WavenumberTruncator
 from preProcess.normalization import Normalization
 
-from models.model_realmlp import RealMLPModel
+from models.model_tabpfn import TabPFNModel
 
 warnings.filterwarnings('ignore')
 
@@ -17,7 +17,7 @@ X_original = dataset[:, :-1]
 y = dataset[:, -1].astype(int)
 y = np.where(y == -1, 0, 1)
 N_TRIALS = 50
-MODEL = RealMLPModel()
+MODEL = TabPFNModel()
 
 def objective(trial):
     """
@@ -31,7 +31,7 @@ def objective(trial):
     
     # Permite valores pares e ímpares para window_length
     window_length = trial.suggest_int('window_length', 3, 25)
-    poly_order = trial.suggest_int('poly_order', 2, window_length - 1)
+    poly_order = trial.suggest_int('poly_order', 2, min(4, window_length - 1))
     deriv = trial.suggest_int('deriv', 0, 2)
     
     baseline = BaselineCorrection().asls_baseline(X_original)

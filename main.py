@@ -45,10 +45,9 @@ X = normalizer.peak_normalization(X, 1660.0, 1630.0)
 # Smooth data
 #X = BaselineCorrection().savgol_filter(X)
 
-
 # Trucate to biologically relevant range
 truncator = WavenumberTruncator()
-X = truncator.trucate_range(X, 3050.0, 850.0)
+X = truncator.truncate_ranges(X, [(3050.0,2800.0), (1800.0,850.0)])
 
 xgb_model = XGBModel()
 svm_model = SVMRBFModel()
@@ -58,7 +57,7 @@ realmlp_model = RealMLPModel()
 tabm_model = TabMModel()
 lightgbm_model = LightGBMModel()
 
-models_list: list[BaseClassifierModel] = [tabpfn_model]
+models_list: list[BaseClassifierModel] = [lightgbm_model]
 
 for model in models_list:
     lst_accu_stratified = []
@@ -80,4 +79,3 @@ for model in models_list:
     print(f"Recall (Sensitivity): {avg_metrics[2]:.4f} ± {std_metrics[2]:.4f}")
     print(f"Specificity: {avg_metrics[3]:.4f} ± {std_metrics[3]:.4f}")
     print(f"Mean(SE,SP): {avg_metrics[4]:.4f} ± {std_metrics[4]:.4f}")
-
