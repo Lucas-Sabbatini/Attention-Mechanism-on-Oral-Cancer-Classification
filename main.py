@@ -47,7 +47,7 @@ X = normalizer.peak_normalization(X, 1660.0, 1630.0)
 
 # Trucate to biologically relevant range
 truncator = WavenumberTruncator()
-X = truncator.truncate_ranges(X, [(3050.0,2800.0), (1800.0,850.0)])
+X = truncator.trucate_range(X, 3050.0, 850.0)
 
 xgb_model = XGBModel()
 svm_model = SVMRBFModel()
