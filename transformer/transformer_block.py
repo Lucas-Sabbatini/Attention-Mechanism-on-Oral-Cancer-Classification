@@ -28,12 +28,16 @@ class CustomTransformerBlock(nn.Module):
         self.dropout = nn.Dropout(dropout)
     
     def forward(self, x, mask=None):
-        # Self-attention with residual connection and layer norm
-        attn_out = self.self_attn(x, mask)
-        x = self.norm1(x + self.dropout(attn_out))
+        # Pre-Norm: Normaliza ANTES de entrar na atenção
+        residual = x
+        x = self.norm1(x)
+        x = self.self_attn(x, mask)
+        x = residual + self.dropout(x)
         
-        # Feed-forward with residual connection and layer norm
-        ffn_out = self.ffn(x)
-        x = self.norm2(x + self.dropout(ffn_out))
+        # Pre-Norm: Normaliza ANTES de entrar no FFN
+        residual = x
+        x = self.norm2(x)
+        x = self.ffn(x)
+        x = residual + self.dropout(x)
         
         return x
