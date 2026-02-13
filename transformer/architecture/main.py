@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import math
 
-from transformer.posEncoding import PositionalEncoding
-from transformer.transformer_block import CustomTransformerBlock
+from transformer.architecture.posEncoding import PositionalEncoding
+from transformer.architecture.transformer_block import CustomTransformerBlock, ProjectorHead
 
 class SpectralTransformer(nn.Module):
     def __init__(self, 
@@ -58,9 +59,30 @@ class SpectralTransformer(nn.Module):
         # Linear layer for final logits
         self.pre_classifier_dropout = nn.Dropout(dropout)
         self.classifier = nn.Linear(d_model, num_classes)
-
-    def forward(self, x, return_logits=False):
         
+        # 5. PROJECTOR HEAD for Contrastive Learning
+        # Maps d_model -> latent space for SupCon loss
+        self.projector = ProjectorHead(
+            in_dim=d_model,
+            hidden_dim=d_model * 2,
+            out_dim=d_model // 2
+        )
+
+    def forward(self, x, return_logits=False, return_embeddings=False):
+        """
+        Forward pass with options for different outputs.
+        
+        Args:
+            x: Input tensor (batch_size, num_spectral_points) or (batch_size, num_spectral_points, 1)
+            return_logits: If True, return raw logits instead of probabilities
+            return_embeddings: If True, return (output, encoder_repr, projected_embeddings) tuple
+                              for contrastive learning
+        
+        Returns:
+            - Default: sigmoid probabilities
+            - return_logits=True: raw logits
+            - return_embeddings=True: (logits/probs, encoder_repr, projected_embeddings)
+        """
         # A. Reshape for Conv1d: (Batch_Size, 1, num_spectral_points)
         if x.dim() == 3:
             x = x.squeeze(-1)  # Remove last dim if present
@@ -86,11 +108,18 @@ class SpectralTransformer(nn.Module):
         # F. Global Average Pooling
         # Average across the patch dimension (dim=1)
         # Output shape: (Batch_Size, d_model)
-        x = x.mean(dim=1)
+        encoder_repr = x.mean(dim=1)
 
         # G. Classification
-        x = self.pre_classifier_dropout(x)
+        x = self.pre_classifier_dropout(encoder_repr)
         logits = self.classifier(x)
+        
+        if return_embeddings:
+            # H. Project to contrastive latent space
+            projected = self.projector(encoder_repr)
+            if return_logits:
+                return logits, encoder_repr, projected
+            return torch.sigmoid(logits), encoder_repr, projected
         
         if return_logits:
             return logits

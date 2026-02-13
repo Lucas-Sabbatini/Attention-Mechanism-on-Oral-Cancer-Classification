@@ -1,6 +1,8 @@
 import torch.nn as nn
+import torch.nn.functional as F
+import torch
 
-from transformer.attention import MultiHeadAttention
+from transformer.architecture.attention import MultiHeadAttention
 
 
 class CustomTransformerBlock(nn.Module):
@@ -41,3 +43,22 @@ class CustomTransformerBlock(nn.Module):
         x = residual + self.dropout(x)
         
         return x
+
+
+class ProjectorHead(nn.Module):
+    """
+    MLP Projector Head for contrastive learning.
+    Maps encoder representations to a lower-dimensional latent space
+    where the contrastive loss is applied.
+    """
+    def __init__(self, in_dim: int, hidden_dim: int = 64, out_dim: int = 32):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, out_dim)
+        )
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return F.normalize(self.net(x), dim=-1)  # L2 normalize for contrastive loss

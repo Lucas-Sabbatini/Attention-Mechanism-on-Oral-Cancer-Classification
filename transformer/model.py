@@ -16,8 +16,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 
 from models.model import BaseClassifierModel
-from transformer.train_engine import TrainEngine
-
+from transformer.training.train_engine import TrainEngine
 
 class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
     """
@@ -32,11 +31,15 @@ class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
                  nhead: int = 4,
                  num_layers: int = 1,
                  dim_feedforward: int = 64,
+                 dropout: float = 0.3,
+                 patch_size: int = 16,
                  lr: float = 5e-3,
                  weight_decay: float = 5e-5,
                  n_epochs: int = 200,
                  batch_size: int = 8,
                  patience: int = 50,
+                 supcon_weight: float = 0.5,
+                 supcon_temperature: float = 0.07,
                  random_state: int = 1,
                  verbose: bool = True,
                  log_interval: int = 5):
@@ -49,6 +52,8 @@ class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
             nhead: Number of attention heads
             num_layers: Number of stacked transformer blocks
             dim_feedforward: Dimension of the feedforward network
+            dropout: Dropout rate for regularization
+            patch_size: Size of spectral patches for conv embedding
             lr: Learning rate
             weight_decay: Weight decay for optimizer (L2 regularization)
             n_epochs: Maximum number of training epochs
@@ -63,6 +68,8 @@ class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
         self.nhead = nhead
         self.num_layers = num_layers
         self.dim_feedforward = dim_feedforward
+        self.dropout = dropout
+        self.patch_size = patch_size
         self.lr = lr
         self.weight_decay = weight_decay
         self.n_epochs = n_epochs
@@ -71,6 +78,8 @@ class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
         self.random_state = random_state
         self.verbose = verbose
         self.log_interval = log_interval
+        self.supcon_weight = supcon_weight
+        self.supcon_temperature = supcon_temperature
         
         # Set device
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
