@@ -8,11 +8,11 @@ from transformer.architecture.attention import MultiHeadAttention
 class CustomTransformerBlock(nn.Module):
     """Custom transformer block using our Attention implementation."""
     
-    def __init__(self, d_model, nhead, dim_feedforward, dropout=0.1):
+    def __init__(self, d_model, nhead, dim_feedforward, seq_len, dropout=0.1):
         super().__init__()
         
         # Multi-head self-attention
-        self.self_attn = MultiHeadAttention(d_model, nhead)
+        self.self_attn = MultiHeadAttention(d_model, nhead, seq_len)
         
         # Feed-forward network
         self.ffn = nn.Sequential(

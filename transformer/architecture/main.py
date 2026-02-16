@@ -51,7 +51,7 @@ class SpectralTransformer(nn.Module):
         # Contains: Self-Attention, Feed-forward, LayerNorm, Residuals
         # Using our custom implementation with the Attention class
         self.transformer_blocks = nn.ModuleList([
-            CustomTransformerBlock(d_model, nhead, dim_feedforward, dropout=dropout)
+            CustomTransformerBlock(d_model, nhead, dim_feedforward, seq_len=self.num_patches, dropout=dropout)
             for _ in range(num_layers)
         ])
 

@@ -122,7 +122,7 @@ class TrainUtils:
         knn_acc: float
     ) -> float:
         if silhouette > -1:
-            return 0.4 * val_acc + 0.3 * ((silhouette + 1) / 2) + 0.3 * knn_acc
+            return 0.4 * val_acc + 0.5 * ((silhouette + 1) / 2) + 0 * knn_acc
         return val_acc
 
     def _log_training_header(

@@ -64,6 +64,10 @@ models_list: list[BaseClassifierModel] = [spectra_model]
 
 for model in models_list:
     lst_accu_stratified = []
+    
+    # Reset fold counter for transformer model diagnostics
+    if hasattr(model, 'reset_fold_counter'):
+        model.reset_fold_counter()
 
     for train_index, test_index in skf.split(X, y):
         X_train_fold, X_test_fold = X[train_index], X[test_index]
@@ -75,6 +79,10 @@ for model in models_list:
 
     avg_metrics = np.mean(lst_accu_stratified, axis=0)
     std_metrics = np.std(lst_accu_stratified, axis=0)
+
+    # Print fold comparison summary for transformer model
+    if hasattr(model, 'print_fold_summary'):
+        model.print_fold_summary()
 
     print(f"\nModel: {model}")
     print(f"Accuracy: {avg_metrics[0]:.4f} ± {std_metrics[0]:.4f}")
