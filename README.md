@@ -128,6 +128,47 @@ The following tables show the performance of several models across different pre
 | **AsLS (No SavGol)** | **0.6810 ± 0.2398** | **0.7317 ± 0.2790** | **0.7500 ± 0.2739** | **0.5833 ± 0.3184** | **0.6667 ± 0.2422** |
 | Polynomial | 0.6048 ± 0.1229 | 0.7400 ± 0.1890 | 0.5583 ± 0.2610 | 0.6333 ± 0.3055 | 0.5958 ± 0.1164 |
 
+## Our architecture: SpectralTransformer
+
+A transformer-based architecture designed for spectroscopic data classification:
+
+### 1. Patching and Embedding: 
+1D convolution splits the spectrum into overlapping patches (50% overlap) and projects them to the model dimension
+### 2. Positional Encoding 
+Sinusoidal encoding preserves spectral position information
+### 3. Transformer Block
+Multi-head self-attention, feed-forward networks, layer normalization, and residual connections (Pre-Norm style)
+
+In this model we applyed two types of attention mechanisms:
+1. **Inter-Spectra**: Captures relationships between different spectra (samples) in the dataset, but from the same wavenumber, allowing the model to learn global patterns across samples.
+2. **Intra-Spectra**: Captures relationships between different wavenumbers within the same spectrum, allowing the model to learn local patterns within each sample.
+
+Both of them defined as the vanilla attention, but in different dimensions:
+$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+
+### 4. Global Average Pooling
+Aggregates patch representations into a single vector
+
+### 5. Classification Head and Loss Function
+
+**Classification Head**: Linear layer with dropout that maps the pooled representation to class logits, followed by sigmoid activation for binary classification.
+
+**Projection Head**: 2-layer MLP with BatchNorm and ReLU that projects encoder representations to a lower-dimensional L2-normalized space for contrastive learning.
+
+**Mixed Loss Function**: Combines two objectives:
+- **Binary Cross-Entropy (BCE)**: Standard classification loss
+- **Supervised Contrastive Loss (SupCon)**: Pulls same-class embeddings together and pushes different-class embeddings apart in the projection space
+
+$$\mathcal{L} = \mathcal{L}_{BCE} + \lambda \cdot \mathcal{L}_{SupCon}$$
+
+![Model Architecture](./ploting/img/architecture.jpeg)
+
+### Postprocessing and Evaluation:
+With this section our goal is to tell wether the model is able to put samples in a linearly separable space, and to analyze the importance of each wavenumber in the model's decision-making process.
+
+![Space Visualization](./ploting/img/encodings/fold_1/embeddings_test.png)
+![Space Visualization](./ploting/img/encodings/fold_1/embeddings_train.png)
+
 ## Postprocessing and Feature Importance
 To interpret the model's decisions, we analyzed feature importance using the CatBoost classifier. The bar plot below illustrates how each wavenumber contributed to the model's predictions. Each bar represents the mean importance of a specific wavelenghth across each of the 10 folds in the stratified k-fold validation.
 

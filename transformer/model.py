@@ -126,6 +126,28 @@ class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
         
         return probs
     
+    def get_embeddings(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Extract encoder and projection head embeddings for visualization.
+        
+        Args:
+            X: Input features (batch_size, num_features)
+            
+        Returns:
+            Tuple of (encoder_embeddings, projected_embeddings)
+            - encoder_embeddings: Output from global average pooling (batch_size, d_model)
+            - projected_embeddings: Output from projection head (batch_size, d_model//2)
+        """
+        self.model.eval()
+        X_tensor = self._prepare_data(X).to(self.device)
+        
+        with torch.no_grad():
+            _, encoder_repr, projected = self.model(X_tensor, return_embeddings=True)
+            encoder_embeddings = encoder_repr.cpu().numpy()
+            projected_embeddings = projected.cpu().numpy()
+        
+        return encoder_embeddings, projected_embeddings
+    
     def calibrate_threshold(self, X_val: np.ndarray, y_val: np.ndarray) -> float:
         """
         Find optimal threshold that maximizes balanced accuracy on validation set.
