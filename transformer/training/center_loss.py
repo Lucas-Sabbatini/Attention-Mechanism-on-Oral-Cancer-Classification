@@ -83,23 +83,3 @@ class CenterLoss(nn.Module):
             center_separation_loss = -dist_matrix[mask].mean()
             loss = loss + center_separation_weight * center_separation_loss
         return loss
-    
-    def update_centers(self, features: torch.Tensor, labels: torch.Tensor, alpha: float = 0.5):
-        """
-        Update centers using exponential moving average (optional alternative to gradient-based update).
-        
-        This can be used instead of or in addition to gradient updates for more stable centers.
-        
-        Args:
-            features: Feature embeddings (batch_size, feat_dim)
-            labels: Ground truth labels (batch_size,)
-            alpha: Learning rate for center update (0.0 = no update, 1.0 = full update)
-        """
-        with torch.no_grad():
-            for c in range(self.num_classes):
-                mask = (labels.long() == c)
-                if mask.sum() > 0:
-                    class_features = features[mask]
-                    class_center = class_features.mean(dim=0)
-                    # EMA update
-                    self.centers.data[c] = (1 - alpha) * self.centers.data[c] + alpha * class_center
