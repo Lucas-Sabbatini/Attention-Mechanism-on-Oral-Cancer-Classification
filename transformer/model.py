@@ -43,7 +43,9 @@ class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
                  n_epochs: int = 200,
                  batch_size: int = 8,
                  patience: int = 50,
-                 supcon_weight: float = 0.5, 
+                 center_loss_weight: float = 0.0,
+                 supcon_weight: float = 0.5,
+                 bce_weight: float = 0.5,
                  supcon_temperature: float = 0.07,
                  random_state: int = 1,
                  verbose: bool = True,
@@ -83,7 +85,9 @@ class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
         self.random_state = random_state
         self.verbose = verbose
         self.log_interval = log_interval
+        self.center_loss_weight = center_loss_weight
         self.supcon_weight = supcon_weight
+        self.bce_weight = bce_weight
         self.supcon_temperature = supcon_temperature
         
         # Set device
