@@ -268,6 +268,20 @@ def main(random_state: int = 1):
             suffix="_test"
         )
         
+        # Plot validation embeddings
+        print("\nExtracting validation embeddings...")
+        encoder_val, projected_val = model.get_embeddings(X_val)
+        predictions_val = model.predict(X_val)
+        
+        plot_embeddings_with_misclassified(
+            encoder_val,
+            projected_val,
+            y_val,
+            predictions_val,
+            fold_num=fold_num,
+            suffix="_val"
+        )
+        
         # Also plot train embeddings for comparison
         print("\nExtracting train embeddings...")
         encoder_train, projected_train = model.get_embeddings(X_train_fold)

@@ -43,7 +43,7 @@ class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
                  n_epochs: int = 200,
                  batch_size: int = 8,
                  patience: int = 50,
-                 supcon_weight: float = 0.5,
+                 supcon_weight: float = 0.5, 
                  supcon_temperature: float = 0.07,
                  random_state: int = 1,
                  verbose: bool = True,

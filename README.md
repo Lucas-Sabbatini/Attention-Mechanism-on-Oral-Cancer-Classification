@@ -159,7 +159,7 @@ Aggregates patch representations into a single vector
 - **Binary Cross-Entropy (BCE)**: Standard classification loss
 - **Supervised Contrastive Loss (SupCon)**: Pulls same-class embeddings together and pushes different-class embeddings apart in the projection space
 
-$$\mathcal{L} = \mathcal{L}_{BCE} + \lambda \cdot \mathcal{L}_{SupCon}$$
+$$\mathcal{L} = (1 - \lambda) \cdot \mathcal{L}_{BCE} + \lambda \cdot \mathcal{L}_{SupCon}$$
 
 ![Model Architecture](./ploting/img/architecture.jpeg)
 

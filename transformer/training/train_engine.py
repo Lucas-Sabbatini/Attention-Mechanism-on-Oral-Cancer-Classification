@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from copy import deepcopy
 
-from transformer.training.sup_con_loss import SupConLoss
+from transformer.training.center_loss import CenterLoss
 from transformer.training.class_balanced_sampler import ClassBalancedSampler
 
 from transformer.training.train_utils import TrainUtils
@@ -85,12 +85,25 @@ class TrainEngine(TrainUtils):
         
         # Loss functions
         bce_criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        supcon_criterion = SupConLoss(temperature=self.supcon_temperature)
+       
+        # Center Loss - learns class centers to reduce intra-class variance
+        # feat_dim is d_model // 2 (projection head output dimension)
+        feat_dim = self.d_model // 2
+        center_criterion = CenterLoss(num_classes=2, feat_dim=feat_dim, device=self.device)
+        # Peso da penalização de afastamento dos centros
+        center_separation_weight = getattr(self, 'center_separation_weight', 0.5)  # valor padrão 0.1
         
+        # Optimizer for model parameters
         optimizer = torch.optim.AdamW(
             self.model.parameters(), 
             lr=self.lr, 
             weight_decay=self.weight_decay
+        )
+        
+        # Separate optimizer for center parameters (higher learning rate)
+        center_optimizer = torch.optim.SGD(
+            center_criterion.parameters(),
+            lr=self.lr * 10  # Centers need higher LR to keep up with features
         )
         
         # Cosine annealing scheduler (works better for small datasets)
@@ -117,6 +130,7 @@ class TrainEngine(TrainUtils):
             
             for X_batch, y_batch in train_loader:
                 optimizer.zero_grad()
+                center_optimizer.zero_grad()
                 
                 # Forward pass with embeddings for contrastive loss
                 logits, encoder_repr, projected = self.model(
@@ -126,20 +140,21 @@ class TrainEngine(TrainUtils):
                 # BCE loss
                 bce_loss = bce_criterion(logits, y_batch)
                 
-                # SupCon loss (need flat labels)
+                # Center loss (need flat labels)
                 labels_flat = y_batch.squeeze(-1)
-                supcon_loss = supcon_criterion(projected, labels_flat)
+                center_loss = center_criterion(projected, labels_flat, center_separation_weight=center_separation_weight)
                 
                 # Combined loss
-                loss = (1 - self.supcon_weight) * bce_loss + self.supcon_weight * supcon_loss
+                loss = (1 - self.supcon_weight) * bce_loss + self.supcon_weight * center_loss
                 
                 train_bce_losses.append(bce_loss.item())
-                train_supcon_losses.append(supcon_loss.item())
+                train_supcon_losses.append(center_loss.item())
                 
                 # Backward pass
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
                 optimizer.step()
+                center_optimizer.step()  # Update centers
                 scheduler.step()
             
             # Validation phase
