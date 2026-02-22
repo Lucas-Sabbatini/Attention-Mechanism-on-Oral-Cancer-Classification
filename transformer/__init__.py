@@ -12,12 +12,12 @@ Submodules:
 - training/: Training utilities (TrainEngine, SupConLoss, etc.)
 """
 
-from transformer.model import SpectralTransformerModel
+from transformer.model import BioSpectralFormer
 from transformer.architecture import SpectralTransformer
 from transformer.training import TrainEngine
 
 __all__ = [
-    'SpectralTransformerModel',
+    'BioSpectralFormer',
     'SpectralTransformer',
     'TrainEngine',
 ]

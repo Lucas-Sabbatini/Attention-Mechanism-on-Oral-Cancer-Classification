@@ -6,7 +6,7 @@ import warnings
 from preProcess.baseline_correction import BaselineCorrection
 from preProcess.fingerprint_trucate import WavenumberTruncator
 from preProcess.normalization import Normalization
-from transformer.model import SpectralTransformerModel
+from transformer.model import BioSpectralFormer
 
 warnings.filterwarnings('ignore')
 
@@ -36,7 +36,7 @@ def objective(trial):
         X_train_fold, X_test_fold = X[train_index], X[test_index]
         y_train_fold, y_test_fold = y[train_index], y[test_index]
 
-        model = SpectralTransformerModel(
+        model = BioSpectralFormer(
             num_spectral_points=X.shape[1],
             center_loss_weight=center_loss_weight,
             supcon_weight=supcon_weight,

@@ -12,7 +12,7 @@ class Attention(nn.Module):
 
         self.d_model = d_model
 
-    def forward(self, encodings_q, encodings_k, encodings_v, mask=None):
+    def forward(self, encodings_q, encodings_k, encodings_v, mask=None, return_attention=False):
 
         q = self.W_q(encodings_q)
         k = self.W_k(encodings_k)
@@ -29,6 +29,9 @@ class Attention(nn.Module):
         attention_percents = torch.softmax(scaled_sims, dim=-1)
 
         attention_scores = torch.matmul(attention_percents, v)
+
+        if return_attention:
+            return attention_scores, attention_percents
 
         return attention_scores
     
@@ -67,31 +70,36 @@ class MultiHeadAttention(nn.Module):
         # Learnable parameter to control inter/intra attention mixing (initialized to 0.5)
         self.alpha = nn.Parameter(torch.tensor(0.5))
     
-    def forward(self, x, mask=None):
+    def forward(self, x, mask=None, return_attention=False):
         batch_size, seq_len, _ = x.shape
 
         ## Inter-feature attention: attend across features (seq_len dimension)
         # Transpose to treat features as sequence: (batch, seq, d_model) -> (batch, d_model, seq_len)
         x_transposed = x.transpose(1, 2)  # (batch, d_model, seq_len)
-        
+
         # Project seq_len -> d_model: (batch, d_model, seq_len) -> (batch, d_model, d_model)
         x_proj_inter = self.W_proj_inter_in(x_transposed)
-        
+
         # Split into heads: (batch, d_model, d_model) -> (batch, d_model, nhead, head_dim)
         x_proj_inter = self.W_split_inter(x_proj_inter).view(batch_size, self.d_model, self.nhead, self.head_dim)
 
         head_outputs_inter = []
+        inter_attn_weights = []  # (nhead,) each: (batch, d_model, d_model)
         for i, head in enumerate(self.heads_inter):
             head_input = x_proj_inter[:, :, i, :]  # (batch, d_model, head_dim)
-            head_out = head(head_input, head_input, head_input)
+            if return_attention:
+                head_out, attn_w = head(head_input, head_input, head_input, return_attention=True)
+                inter_attn_weights.append(attn_w)
+            else:
+                head_out = head(head_input, head_input, head_input)
             head_outputs_inter.append(head_out)
 
         # Concatenate heads: (batch, d_model, d_model)
         concat_inter = torch.cat(head_outputs_inter, dim=-1)
-        
+
         # Output projection in d_model space
         output_inter = self.W_out_inter(concat_inter)  # (batch, d_model, d_model)
-        
+
         # Project back d_model -> seq_len: (batch, d_model, d_model) -> (batch, d_model, seq_len)
         output_inter = self.W_proj_inter_out(output_inter)
 
@@ -104,24 +112,37 @@ class MultiHeadAttention(nn.Module):
         ## Intra-sample attention: attend across sequence positions (standard attention)
         # Project and reshape: (batch, seq, d_model) -> (batch, seq, nhead, head_dim)
         x_proj_intra = self.W_split_intra(output_inter).view(batch_size, seq_len, self.nhead, self.head_dim)
-        
+
         # Apply each attention head
         head_outputs_intra = []
+        intra_attn_weights = []  # (nhead,) each: (batch, seq_len, seq_len)
         for i, head in enumerate(self.heads_intra):
             head_input = x_proj_intra[:, :, i, :]  # (batch, seq, head_dim)
-            head_out = head(head_input, head_input, head_input, mask)
+            if return_attention:
+                head_out, attn_w = head(head_input, head_input, head_input, mask, return_attention=True)
+                intra_attn_weights.append(attn_w)
+            else:
+                head_out = head(head_input, head_input, head_input, mask)
             head_outputs_intra.append(head_out)
-        
+
         # Concatenate heads: (batch, seq, d_model)
         concat_intra = torch.cat(head_outputs_intra, dim=-1)
-        
+
         # Final projection
         output = self.W_out_intra(concat_intra)
-        
+
         # Combine inter and intra attention with learnable alpha
         # alpha controls balance: 0 = pure intra, 1 = pure inter
         alpha = torch.sigmoid(self.alpha)  # Constrain to [0, 1]
         output = (1 - alpha) * output + alpha * output_inter
-        
+
+        if return_attention:
+            attn_maps = {
+                'inter_attention': inter_attn_weights,  # list of (batch, d_model, d_model) per head
+                'intra_attention': intra_attn_weights,  # list of (batch, seq_len, seq_len) per head
+                'alpha': alpha.item(),
+            }
+            return output, attn_maps
+
         return output
 

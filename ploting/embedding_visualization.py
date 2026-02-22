@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from preProcess.baseline_correction import BaselineCorrection
 from preProcess.fingerprint_trucate import WavenumberTruncator
 from preProcess.normalization import Normalization
-from transformer.model import SpectralTransformerModel
+from transformer.model import BioSpectralFormer
 
 
 def load_and_preprocess_data(dataset_path: str = "dataset_cancboca.dat"):
@@ -228,7 +228,7 @@ def main(random_state: int = 1):
         )
         
         # Initialize model (fresh for each fold)
-        model = SpectralTransformerModel(
+        model = BioSpectralFormer(
             num_spectral_points=X.shape[1],
             verbose=False
         )

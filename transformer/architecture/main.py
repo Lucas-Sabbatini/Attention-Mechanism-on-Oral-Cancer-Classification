@@ -67,42 +67,51 @@ class SpectralTransformer(nn.Module):
             out_dim=d_model // 2
         )
 
-    def forward(self, x, return_logits=False, return_embeddings=False):
+    def forward(self, x, return_logits=False, return_embeddings=False, return_attention=False):
         """
         Forward pass with options for different outputs.
-        
+
         Args:
             x: Input tensor (batch_size, num_spectral_points) or (batch_size, num_spectral_points, 1)
             return_logits: If True, return raw logits instead of probabilities
             return_embeddings: If True, return (output, encoder_repr, projected_embeddings) tuple
                               for contrastive learning
-        
+            return_attention: If True, also return list of attention maps from each block
+
         Returns:
             - Default: sigmoid probabilities
             - return_logits=True: raw logits
             - return_embeddings=True: (logits/probs, encoder_repr, projected_embeddings)
+            - return_attention=True: appends attention_maps list to any of the above returns
+              attention_maps[i] is the dict from block i with keys
+              'inter_attention', 'intra_attention', 'alpha'
         """
         # A. Reshape for Conv1d: (Batch_Size, 1, num_spectral_points)
         if x.dim() == 3:
             x = x.squeeze(-1)  # Remove last dim if present
         x = x.unsqueeze(1)  # Add channel dimension
-        
+
         # B. Apply Convolutional Patch Embedding
         # Output: (Batch_Size, d_model, num_patches)
         x = self.patch_embedding(x)
-        
+
         # C. Transpose for transformer: (Batch_Size, num_patches, d_model)
         x = x.transpose(1, 2)
         x = x * math.sqrt(self.d_model)
         x = self.embed_dropout(x)
-        
+
         # D. Add Positional Encoding
         x = self.positional_encoding.forward(x)
 
         # E. Pass through L Transformer Blocks
         # Output shape: (Batch_Size, num_patches, d_model)
+        all_attn_maps = []
         for block in self.transformer_blocks:
-            x = block(x)
+            if return_attention:
+                x, attn_maps = block(x, return_attention=True)
+                all_attn_maps.append(attn_maps)
+            else:
+                x = block(x)
 
         # F. Global Average Pooling
         # Average across the patch dimension (dim=1)
@@ -112,15 +121,22 @@ class SpectralTransformer(nn.Module):
         # G. Classification
         x = self.pre_classifier_dropout(encoder_repr)
         logits = self.classifier(x)
-        
+
         if return_embeddings:
             # H. Project to contrastive latent space
             projected = self.projector(encoder_repr)
             if return_logits:
-                return logits, encoder_repr, projected
-            return torch.sigmoid(logits), encoder_repr, projected
-        
-        if return_logits:
-            return logits
-        
-        return torch.sigmoid(logits)
+                main_out = (logits, encoder_repr, projected)
+            else:
+                main_out = (torch.sigmoid(logits), encoder_repr, projected)
+        elif return_logits:
+            main_out = logits
+        else:
+            main_out = torch.sigmoid(logits)
+
+        if return_attention:
+            if isinstance(main_out, tuple):
+                return (*main_out, all_attn_maps)
+            return main_out, all_attn_maps
+
+        return main_out

@@ -16,7 +16,7 @@ from models.model_tabm import TabMModel
 from models.model_lightgbm import LightGBMModel
 from models.model import BaseClassifierModel
 
-from transformer.model import SpectralTransformerModel
+from transformer.model import BioSpectralFormer
 
 # Suppress warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
@@ -58,9 +58,9 @@ catboost_model = CatBoostModel()
 realmlp_model = RealMLPModel()
 tabm_model = TabMModel()
 lightgbm_model = LightGBMModel()
-spectra_model = SpectralTransformerModel(num_spectral_points=X.shape[1])
+spectra_model = BioSpectralFormer(num_spectral_points=X.shape[1])
 
-models_list: list[BaseClassifierModel] = [spectra_model]
+models_list: list[BaseClassifierModel] = [ spectra_model]
 
 for model in models_list:
     lst_accu_stratified = []

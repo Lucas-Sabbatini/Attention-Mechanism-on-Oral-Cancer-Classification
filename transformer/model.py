@@ -19,7 +19,7 @@ from scipy.stats import ks_2samp
 from models.model import BaseClassifierModel
 from transformer.training.train_engine import TrainEngine
 
-class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
+class BioSpectralFormer(TrainEngine, BaseClassifierModel):
     """
     Wrapper class for SpectralTransformer that follows the BaseClassifierModel interface.
     Provides training, prediction, and evaluation methods compatible with the project's
@@ -130,6 +130,42 @@ class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
         
         return probs
     
+    def get_attention_maps(self, X: np.ndarray, layer_idx: int = -1) -> dict:
+        """
+        Extract attention maps for visualization.
+
+        Args:
+            X: Input features (batch_size, num_features)
+            layer_idx: Which transformer layer to visualize (-1 for last layer)
+
+        Returns:
+            Dictionary containing:
+                - 'inter_attention': List of inter-feature attention maps per head,
+                  each of shape (d_model, d_model), averaged over the batch.
+                - 'intra_attention': List of intra-sample attention maps per head,
+                  each of shape (seq_len, seq_len), averaged over the batch.
+                - 'alpha': Mixing parameter value (float) for the selected layer.
+        """
+        self.model.eval()
+        X_tensor = self._prepare_data(X).to(self.device)
+
+        with torch.no_grad():
+            _, all_attn_maps = self.model(X_tensor, return_attention=True)
+
+        layer_maps = all_attn_maps[layer_idx]
+
+        return {
+            'inter_attention': [
+                w.cpu().numpy().mean(axis=0)  # average over batch -> (d_model, d_model)
+                for w in layer_maps['inter_attention']
+            ],
+            'intra_attention': [
+                w.cpu().numpy().mean(axis=0)  # average over batch -> (seq_len, seq_len)
+                for w in layer_maps['intra_attention']
+            ],
+            'alpha': layer_maps['alpha'],
+        }
+
     def get_embeddings(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Extract encoder and projection head embeddings for visualization.
@@ -201,8 +237,8 @@ class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
         Returns:
             Tuple of (accuracy, precision, recall, specificity, mean_se_sp)
         """
-        SpectralTransformerModel._fold_counter += 1
-        fold_num = SpectralTransformerModel._fold_counter
+        BioSpectralFormer._fold_counter += 1
+        fold_num = BioSpectralFormer._fold_counter
         
         # Fold diagnostics
         diagnostics = self._compute_fold_diagnostics(
@@ -240,7 +276,7 @@ class SpectralTransformerModel(TrainEngine, BaseClassifierModel):
         diagnostics['threshold'] = self.optimal_threshold
         diagnostics['predictions'] = y_pred.tolist()
         diagnostics['true_labels'] = y_test_fold.tolist()
-        SpectralTransformerModel._fold_diagnostics.append(diagnostics)
+        BioSpectralFormer._fold_diagnostics.append(diagnostics)
         
         if self.verbose:
             self._print_fold_diagnostics(diagnostics)
