@@ -14,10 +14,6 @@ import numpy as np
 from scipy.stats import ttest_rel, wilcoxon
 
 
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
 _METRIC_NAMES: list[str] = [
     "accuracy",
     "precision",
@@ -35,9 +31,6 @@ _METRIC_LABELS: dict[str, str] = {
 }
 
 
-# ---------------------------------------------------------------------------
-# Private helpers
-# ---------------------------------------------------------------------------
 
 def _extract_metric(fold_results: list[tuple], metric_idx: int) -> np.ndarray:
     """Extract a single metric column from a list of fold result tuples."""
@@ -146,9 +139,6 @@ def _print_table(results: dict, model1_name: str, model2_name: str, alpha: float
     print(f"  n_folds = {results['_meta']['n_folds']}\n")
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
 
 def paired_t_test(
     model1_results: list[tuple],

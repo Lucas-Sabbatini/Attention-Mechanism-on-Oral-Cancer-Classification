@@ -36,8 +36,8 @@ from preProcess.baseline_correction import BaselineCorrection
 from preProcess.fingerprint_trucate import WavenumberTruncator
 from preProcess.normalization import Normalization
 from transformer.model import BioSpectralFormer
-from transformer.visualization import plot_attention_maps, plot_layer_comparison
-from transformer.visualization.plot_attention import _patches_to_spectrum_weights
+from transformer.visualize import plot_attention_maps, plot_layer_comparison
+from transformer.visualize.plot_attention import _patches_to_spectrum_weights
 
 OUTPUT_BASE = Path(__file__).parent / "img" / "attention"
 
