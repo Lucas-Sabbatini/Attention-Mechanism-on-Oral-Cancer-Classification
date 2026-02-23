@@ -3,7 +3,7 @@ import numpy as np
 import warnings
 import os
 
-from transformer.postProcessing import paired_t_test
+from transformer.visualize import paired_t_test
 
 from preProcess.baseline_correction import BaselineCorrection
 from preProcess.fingerprint_trucate import WavenumberTruncator
