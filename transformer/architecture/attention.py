@@ -24,7 +24,7 @@ class Attention(nn.Module):
         scaled_sims = sims / (self.d_model ** 0.5)
 
         if mask is not None:
-            scaled_sims = scaled_sims.masked_fill(mask=mask, value=-1e9)
+            scaled_sims = scaled_sims + mask
 
         attention_percents = torch.softmax(scaled_sims, dim=-1)
 

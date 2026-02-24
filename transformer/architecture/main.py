@@ -5,8 +5,60 @@ import math
 from transformer.architecture.posEncoding import PositionalEncoding
 from transformer.architecture.transformer_block import CustomTransformerBlock, ProjectorHead
 
+# Biochemical regions of interest (wavenumber ranges in cm⁻¹)
+# Each region is defined as (upper_wn, lower_wn) in descending order
+BIOCHEMICAL_REGIONS = {
+    'amide_i':      (1700, 1600),   # C=O stretch, protein secondary structure
+    'amide_ii':     (1580, 1480),   # N-H bend + C-N stretch, protein conformation
+    'amide_iii':    (1350, 1200),   # C-N stretch + N-H bend, protein backbone
+    'lipid_ch':     (3050, 2800),   # C-H stretching, lipid content
+    'carbohydrate': (1170, 1000),   # C-O stretch, glycogen and carbohydrates
+    'nucleic_acid': (1270, 1185),   # PO₂⁻ asymmetric stretch, DNA/RNA
+    'phosphate':    (1130, 1000),   # PO₂⁻ symmetric stretch, phosphorylation
+}
+
+# Biologically meaningful interaction pairs
+# Each pair represents coupled biochemical processes relevant to cancer detection
+DEFAULT_REGION_PAIRS = [
+    ('amide_i', 'amide_ii'),        # Protein secondary structure coupling
+    ('amide_i', 'amide_iii'),       # Protein backbone conformation
+    ('amide_ii', 'amide_iii'),      # Protein backbone coupling
+    ('amide_i', 'lipid_ch'),        # Protein-lipid interaction
+    ('amide_i', 'carbohydrate'),    # Protein-glycan interaction
+    ('nucleic_acid', 'phosphate'),  # DNA/RNA structural coupling
+]
+
+
+def resolve_region_pairs(
+    pair_names: list[tuple[str, str]],
+    region_definitions: dict[str, tuple[int, int]] = None,
+) -> list[tuple[tuple[int, int], tuple[int, int]]]:
+    """
+    Resolve named region pairs to wavenumber range tuples.
+
+    Args:
+        pair_names: List of (region_name_A, region_name_B) pairs.
+        region_definitions: Dict mapping region names to (upper_wn, lower_wn).
+            Defaults to BIOCHEMICAL_REGIONS.
+
+    Returns:
+        List of ((upper_A, lower_A), (upper_B, lower_B)) wavenumber tuples.
+    """
+    if region_definitions is None:
+        region_definitions = BIOCHEMICAL_REGIONS
+
+    resolved = []
+    for name_a, name_b in pair_names:
+        if name_a not in region_definitions:
+            raise ValueError(f"Unknown region '{name_a}'. Available: {list(region_definitions.keys())}")
+        if name_b not in region_definitions:
+            raise ValueError(f"Unknown region '{name_b}'. Available: {list(region_definitions.keys())}")
+        resolved.append((region_definitions[name_a], region_definitions[name_b]))
+    return resolved
+
+
 class SpectralTransformer(nn.Module):
-    def __init__(self, 
+    def __init__(self,
                  num_spectral_points,       # "d" (~1k features)
                  d_model=64,                # Dimension of the feature space
                  nhead=4,                   # "h" attention heads
@@ -14,7 +66,8 @@ class SpectralTransformer(nn.Module):
                  dim_feedforward=128,       # "d_ff" intermediate dimension
                  num_classes=1,             # Binary classification (Cancer vs Healthy)
                  dropout=0.3,               # Dropout rate for regularization
-                 patch_size=16):            # Size of spectral patches for conv embedding
+                 patch_size=16,             # Size of spectral patches for conv embedding
+                 attention_mask_bias=None): # Additive attention bias (num_patches, num_patches)
         super().__init__()
 
         self.num_spectral_points = num_spectral_points
@@ -27,9 +80,15 @@ class SpectralTransformer(nn.Module):
 
         # Calculate stride for overlapping patches (50% overlap by default)
         self.patch_stride = patch_size // 2
-        
+
         # Calculate number of patches with overlap: (L - K) / S + 1
         self.num_patches = (num_spectral_points - patch_size) // self.patch_stride + 1
+
+        # 0. ATTENTION MASK BIAS (static, not a learnable parameter)
+        if attention_mask_bias is not None:
+            self.register_buffer('attention_mask_bias', attention_mask_bias)
+        else:
+            self.attention_mask_bias = None
 
         # 1. CONVOLUTIONAL PATCH EMBEDDING
         # Projects a patch of spectral intensities to feature space (d_model)
@@ -108,10 +167,10 @@ class SpectralTransformer(nn.Module):
         all_attn_maps = []
         for block in self.transformer_blocks:
             if return_attention:
-                x, attn_maps = block(x, return_attention=True)
+                x, attn_maps = block(x, mask=self.attention_mask_bias, return_attention=True)
                 all_attn_maps.append(attn_maps)
             else:
-                x = block(x)
+                x = block(x, mask=self.attention_mask_bias)
 
         # F. Global Average Pooling
         # Average across the patch dimension (dim=1)

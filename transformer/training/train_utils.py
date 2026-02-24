@@ -6,7 +6,8 @@ from sklearn.metrics import silhouette_score
 from sklearn.neighbors import KNeighborsClassifier
 from typing import Tuple
 
-from transformer.architecture.main import SpectralTransformer
+from transformer.architecture.main import SpectralTransformer, resolve_region_pairs
+from transformer.architecture.region_mask import build_region_attention_mask
 
 class TrainUtils:
     def _set_seeds(self, seed: int):
@@ -18,10 +19,28 @@ class TrainUtils:
             torch.cuda.manual_seed_all(seed)
             torch.backends.cudnn.deterministic = True
             torch.backends.cudnn.benchmark = False
-    
+
+    def _build_attention_mask(self):
+        """Build the biochemical region attention mask if region_pairs is configured."""
+        if not hasattr(self, 'region_pairs') or not self.region_pairs:
+            return None
+
+        wavenumber_pairs = resolve_region_pairs(self.region_pairs)
+        mask_bias = build_region_attention_mask(
+            region_pairs=wavenumber_pairs,
+            patch_size=self.patch_size,
+            num_spectral_points=self.num_spectral_points,
+            truncation_range=getattr(self, 'truncation_range', (3050, 850)),
+            penalty=getattr(self, 'mask_penalty', 10.0),
+        )
+        return mask_bias.to(self.device)
+
     def _init_model(self):
         """Initialize a fresh model instance"""
         self._set_seeds(self.random_state)
+
+        attention_mask_bias = self._build_attention_mask()
+
         self.model = SpectralTransformer(
             num_spectral_points=self.num_spectral_points,
             d_model=self.d_model,
@@ -30,7 +49,8 @@ class TrainUtils:
             dim_feedforward=self.dim_feedforward,
             dropout=self.dropout,
             patch_size=self.patch_size,
-            num_classes=1
+            num_classes=1,
+            attention_mask_bias=attention_mask_bias,
         ).to(self.device)
     
     def _prepare_data(self, X: np.ndarray, y: np.ndarray = None):

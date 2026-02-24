@@ -19,6 +19,8 @@ from scipy.stats import ks_2samp
 from models.model import BaseClassifierModel
 from transformer.training.train_engine import TrainEngine
 
+from transformer.architecture.main import DEFAULT_REGION_PAIRS
+
 class BioSpectralFormer(TrainEngine, BaseClassifierModel):
     """
     Wrapper class for SpectralTransformer that follows the BaseClassifierModel interface.
@@ -30,7 +32,7 @@ class BioSpectralFormer(TrainEngine, BaseClassifierModel):
     _fold_counter = 0
     _fold_diagnostics = []
     
-    def __init__(self, 
+    def __init__(self,
                  num_spectral_points: int = 1141,
                  d_model: int = 32,
                  nhead: int = 4,
@@ -47,6 +49,9 @@ class BioSpectralFormer(TrainEngine, BaseClassifierModel):
                  supcon_weight: float = 0.08147954592377823,
                  bce_weight: float = 0.388548229,
                  supcon_temperature: float = 0.07,
+                 region_pairs: list = DEFAULT_REGION_PAIRS,
+                 mask_penalty: float = 15.0,
+                 truncation_range: tuple = (3050, 850),
                  random_state: int = 1,
                  verbose: bool = True,
                  log_interval: int = 10):
@@ -89,7 +94,10 @@ class BioSpectralFormer(TrainEngine, BaseClassifierModel):
         self.supcon_weight = supcon_weight
         self.bce_weight = bce_weight
         self.supcon_temperature = supcon_temperature
-        
+        self.region_pairs = region_pairs
+        self.mask_penalty = mask_penalty
+        self.truncation_range = truncation_range
+
         # Set device
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
