@@ -49,9 +49,15 @@ class BioSpectralFormer(TrainEngine, BaseClassifierModel):
                  supcon_weight: float = 0.08147954592377823,
                  bce_weight: float = 0.388548229,
                  supcon_temperature: float = 0.07,
-                 region_pairs: list = DEFAULT_REGION_PAIRS,
-                 mask_penalty: float = 15.0,
+                 region_pairs: list = None,
+                 mask_penalty: float = 10.0,
                  truncation_range: tuple = (3050, 850),
+                 use_frda: bool = True,
+                 frda_n_aug: int = 10,
+                 frda_balance: bool = False,
+                 frda_cam_epochs: int = 50,
+                 frda_report_dir: str = "outputs/frda_report",
+                 frda_wavenumbers: np.ndarray = None,
                  random_state: int = 1,
                  verbose: bool = True,
                  log_interval: int = 10):
@@ -97,6 +103,12 @@ class BioSpectralFormer(TrainEngine, BaseClassifierModel):
         self.region_pairs = region_pairs
         self.mask_penalty = mask_penalty
         self.truncation_range = truncation_range
+        self.use_frda = use_frda
+        self.frda_n_aug = frda_n_aug
+        self.frda_balance = frda_balance
+        self.frda_cam_epochs = frda_cam_epochs
+        self.frda_report_dir = frda_report_dir
+        self.frda_wavenumbers = frda_wavenumbers
 
         # Set device
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -256,7 +268,7 @@ class BioSpectralFormer(TrainEngine, BaseClassifierModel):
         # Split training data into train and validation sets
         X_train, X_val, y_train, y_val = train_test_split(
             X_train_fold, y_train_fold, 
-            test_size=0.3, 
+            test_size=0.4, 
             random_state=self.random_state,
             stratify=y_train_fold
         )

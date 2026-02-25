@@ -47,6 +47,23 @@ class TrainEngine(TrainUtils):
             X_val: Validation features
             y_val: Validation labels
         """
+        # FRDA augments X_train/y_train ONLY — X_val is never touched
+        if getattr(self, 'use_frda', True):
+            from transformer.augmentation.augmentation_pipeline import FRDAPipeline
+            frda = FRDAPipeline(
+                device=self.device,
+                num_spectral_points=self.num_spectral_points,
+                d_model=min(self.d_model, 32),
+                n_augmented_per_class=getattr(self, 'frda_n_aug', 200),
+                balance_classes=getattr(self, 'frda_balance', True),
+                cam_epochs=getattr(self, 'frda_cam_epochs', 50),
+                random_state=self.random_state,
+                verbose=self.verbose,
+                quality_report_dir=getattr(self, 'frda_report_dir', None),
+                wavenumbers=getattr(self, 'frda_wavenumbers', None),
+            )
+            X_train, y_train = frda.fit_transform(X_train, y_train)
+
         # Initialize fresh model
         self._init_model()
         
