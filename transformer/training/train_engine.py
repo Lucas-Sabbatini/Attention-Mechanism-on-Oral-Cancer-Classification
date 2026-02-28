@@ -110,13 +110,16 @@ class TrainEngine(TrainUtils):
         
         # Cosine annealing scheduler (works better for small datasets)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-            optimizer, T_0=20, T_mult=2, eta_min=1e-6
+            optimizer, T_0=0, T_mult=2, eta_min=1e-5
         )
         
         # Early stopping variables - track composite metric
         best_val_score = -float('inf')
         best_model_state = None
         remaining_patience = self.patience
+
+        # Loss history for plotting
+        self.loss_history = []
         
         self._log_training_header(
             len(X_train_tensor), len(X_val_tensor),
@@ -129,6 +132,7 @@ class TrainEngine(TrainUtils):
             self.model.train()
             train_bce_losses = []
             train_supcon_losses = []
+            train_total_losses = []
             
             for X_batch, y_batch in train_loader:
                 optimizer.zero_grad()
@@ -158,6 +162,7 @@ class TrainEngine(TrainUtils):
                 loss = self.bce_weight * bce_loss + self.center_loss_weight * center_loss + self.supcon_weight * supcon_loss
 
                 train_bce_losses.append(bce_loss.item())
+                train_total_losses.append(loss.item())
 
                 # Backward pass
                 loss.backward()
@@ -180,6 +185,8 @@ class TrainEngine(TrainUtils):
             # Calculate average training losses
             avg_bce = np.mean(train_bce_losses)
             avg_supcon = np.mean(train_supcon_losses) if train_supcon_losses else 0
+            avg_total = np.mean(train_total_losses)
+            self.loss_history.append(avg_total)
             current_lr = optimizer.param_groups[0]['lr']
             
             # Composite validation score for early stopping
