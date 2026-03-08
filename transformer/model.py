@@ -40,21 +40,21 @@ class BioSpectralFormer(TrainEngine, BaseClassifierModel):
                  dim_feedforward: int = 64,
                  dropout: float = 0.3,
                  patch_size: int = 16,
-                 lr: float = 5e-4,
+                 lr: float = 5e-3,
                  weight_decay: float = 5e-5,
-                 n_epochs: int = 1000,
+                 n_epochs: int = 200,
                  batch_size: int = 8,
-                 patience: int = 1000,
-                 center_loss_weight: float = 0,
+                 patience: int = 50,
+                 center_loss_weight: float = 0.5,
                  supcon_weight: float = 0,
-                 bce_weight: float = 1,
+                 bce_weight: float = 0.5,
                  supcon_temperature: float = 0.07,
                  region_pairs: list = None,
-                 mask_penalty: float = 15.0,
+                 mask_penalty: float = 10.0,
                  truncation_range: tuple = (3050, 850),
                  random_state: int = 1,
                  verbose: bool = True,
-                 log_interval: int = 10):
+                 log_interval: int = 20):
         """
         Initialize SpectralTransformer model wrapper.
         

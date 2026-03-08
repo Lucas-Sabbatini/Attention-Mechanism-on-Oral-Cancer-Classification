@@ -110,7 +110,7 @@ class TrainEngine(TrainUtils):
         
         # Cosine annealing scheduler (works better for small datasets)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-            optimizer, T_0=0, T_mult=2, eta_min=1e-5
+            optimizer, T_0=20, T_mult=2, eta_min=1e-6
         )
         
         # Early stopping variables - track composite metric

@@ -55,6 +55,7 @@ def main(random_state: int = 1, n_splits: int = 10):
     OUTPUT_BASE.mkdir(parents=True, exist_ok=True)
 
     fold_metrics = []
+    test_fold_metrics = []
 
     for fold_idx, (train_index, test_index) in enumerate(skf.split(X, y)):
         fold_num = fold_idx + 1
@@ -64,6 +65,8 @@ def main(random_state: int = 1, n_splits: int = 10):
 
         X_train_fold = X[train_index]
         y_train_fold = y[train_index]
+        X_test_fold = X[test_index]
+        y_test_fold = y[test_index]
 
         X_train, X_val, y_train, y_val = train_test_split(
             X_train_fold, y_train_fold,
@@ -71,8 +74,12 @@ def main(random_state: int = 1, n_splits: int = 10):
             random_state=random_state,
             stratify=y_train_fold,
         )
-
         model = BioSpectralFormer(num_spectral_points=num_spectral_points)
+
+        # Reset fold counter for transformer model diagnostics
+        if hasattr(model, 'reset_fold_counter'):
+            model.reset_fold_counter()
+
         model.train_model(X_train, y_train, X_val, y_val)
         model.calibrate_threshold(X_val, y_val)
 
@@ -86,6 +93,21 @@ def main(random_state: int = 1, n_splits: int = 10):
             'mean_se_sp': (recall_score(y_val, y_pred, zero_division=0)
                            + recall_score(y_val, y_pred, pos_label=0, zero_division=0)) / 2,
         })
+
+        # Collect test metrics
+        y_test_pred = model.predict(X_test_fold)
+        se = recall_score(y_test_fold, y_test_pred, zero_division=0)
+        sp = recall_score(y_test_fold, y_test_pred, pos_label=0, zero_division=0)
+        test_fold_metrics.append({
+            'acc': accuracy_score(y_test_fold, y_test_pred),
+            'prec': precision_score(y_test_fold, y_test_pred, zero_division=0),
+            'recall': se,
+            'spec': sp,
+            'mean_se_sp': (se + sp) / 2,
+        })
+
+        if hasattr(model, 'print_fold_summary'):
+            model.print_fold_summary()
 
         # Individual fold plot
         epochs = range(1, len(model.loss_history) + 1)
@@ -113,6 +135,24 @@ def main(random_state: int = 1, n_splits: int = 10):
         print(f"  {label:<18s}: {np.mean(values):.1%} +/- {np.std(values):.1%}")
     print(f"{'='*60}")
 
+    # Print per-fold test set performance
+    print(f"\n{'='*60}")
+    print(f"TEST SET PERFORMANCE PER FOLD")
+    print(f"{'='*60}")
+    for i, m in enumerate(test_fold_metrics, 1):
+        print(f"  Fold {i:>2d}  |  Acc: {m['acc']:.1%}  Prec: {m['prec']:.1%}  "
+              f"Recall(SE): {m['recall']:.1%}  Spec(SP): {m['spec']:.1%}  "
+              f"Mean(SE,SP): {m['mean_se_sp']:.1%}")
+    print(f"{'='*60}")
+    for metric, label in [('acc', 'Accuracy'),
+                          ('prec', 'Precision'),
+                          ('recall', 'Recall (SE)'),
+                          ('spec', 'Specificity (SP)'),
+                          ('mean_se_sp', 'Mean(SE,SP)')]:
+        values = [m[metric] for m in test_fold_metrics]
+        print(f"  {label:<18s}: {np.mean(values):.1%} +/- {np.std(values):.1%}")
+    print(f"{'='*60}")
+
     print(f"\nDone. All outputs saved under {OUTPUT_BASE}")
 
 
@@ -123,7 +163,7 @@ if __name__ == "__main__":
         description="Plot BioSpectralFormer training loss curves across CV folds"
     )
     parser.add_argument("--seed",  type=int, default=1,  help="Random seed (default: 1)")
-    parser.add_argument("--folds", type=int, default=2, help="Number of CV folds (default: 10)")
+    parser.add_argument("--folds", type=int, default=10, help="Number of CV folds (default: 10)")
     args = parser.parse_args()
 
     main(random_state=args.seed, n_splits=args.folds)

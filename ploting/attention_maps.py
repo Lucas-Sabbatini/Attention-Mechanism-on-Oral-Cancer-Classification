@@ -270,7 +270,7 @@ def plot_mean_attention_and_spectra(
         2, 3,
         figure=fig,
         height_ratios=[1.6, 1],
-        hspace=0.42, wspace=0.38,
+        hspace=1, wspace=1,
     )
     fig.suptitle(
         'BioSpectralFormer – Cross-fold Mean Attention & Spectra',
