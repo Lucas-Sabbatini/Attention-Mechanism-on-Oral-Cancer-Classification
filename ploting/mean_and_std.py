@@ -33,7 +33,8 @@ plt.title('Mean Spectra with Standard Deviation by Class', fontsize=14, fontweig
 plt.xlabel('Wavenumber (cm⁻¹)', fontsize=12)
 plt.ylabel('Intensity', fontsize=12)
 plt.xlim(4000, 500)
-plt.legend()
+plt.ylim(-0.1, 0.45)
+plt.legend(fontsize=20)
 plt.grid(True, linestyle='--', alpha=0.5)
 plt.tight_layout()
 
