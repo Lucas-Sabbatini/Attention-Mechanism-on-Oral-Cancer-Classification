@@ -28,7 +28,7 @@ def _patches_to_spectrum_weights(
     patch_size: int = 16,
 ) -> np.ndarray:
     """
-    Collapse a (seq_len, seq_len) intra-sample attention map to a 1-D weight
+    Collapse a (seq_len, seq_len) token-axis attention map to a 1-D weight
     vector aligned with the original spectral axis.
 
     Strategy: average each row of the attention matrix to get one importance
@@ -108,11 +108,11 @@ def plot_attention_maps(
     layer_idx: int = -1,
 ) -> None:
     """
-    Visualise inter-feature and intra-sample attention maps for one layer.
+    Visualise channel-axis and token-axis attention maps for one layer.
 
     Creates a 3-row figure:
-        Row 1 – Heatmaps of inter-feature attention (one per head).
-        Row 2 – Heatmaps of intra-sample attention (one per head).
+        Row 1 – Heatmaps of channel-axis attention (one per head).
+        Row 2 – Heatmaps of token-axis attention (one per head).
         Row 3 – Spectrum with attention overlay (similar to ACT paper Fig. 3).
 
     Args:
@@ -141,7 +141,7 @@ def plot_attention_maps(
 
     gs = gridspec.GridSpec(3, n_heads, figure=fig, hspace=0.45, wspace=0.35)
 
-    # --- Row 1: inter-feature attention ---
+    # --- Row 1: channel-axis attention ---
     for h in range(n_heads):
         ax = fig.add_subplot(gs[0, h])
         sns.heatmap(
@@ -153,11 +153,11 @@ def plot_attention_maps(
             xticklabels=False,
             yticklabels=False,
         )
-        ax.set_title(f'Inter-feature\nHead {h + 1}', fontsize=9)
+        ax.set_title(f'Channel-axis\nHead {h + 1}', fontsize=9)
         if h == 0:
             ax.set_ylabel('Feature dim', fontsize=8)
 
-    # --- Row 2: intra-sample attention ---
+    # --- Row 2: token-axis attention ---
     for h in range(n_heads):
         ax = fig.add_subplot(gs[1, h])
         sns.heatmap(
@@ -169,7 +169,7 @@ def plot_attention_maps(
             xticklabels=False,
             yticklabels=False,
         )
-        ax.set_title(f'Intra-sample\nHead {h + 1}', fontsize=9)
+        ax.set_title(f'Token-axis\nHead {h + 1}', fontsize=9)
         if h == 0:
             ax.set_ylabel('Patch (query)', fontsize=8)
             ax.set_xlabel('Patch (key)', fontsize=8)
@@ -204,7 +204,7 @@ def plot_attention_maps(
         ax2.tick_params(axis='y', labelcolor='steelblue')
 
     ax_overlay.set_xlabel(x_label, fontsize=9)
-    ax_overlay.set_title('Mean intra-sample attention projected onto spectral axis', fontsize=9)
+    ax_overlay.set_title('Mean token-axis attention projected onto spectral axis', fontsize=9)
 
     # Reverse x-axis if wavenumbers descend (typical FTIR convention)
     if wavenumbers is not None and wavenumbers[0] > wavenumbers[-1]:
@@ -228,8 +228,8 @@ def plot_layer_comparison(
     Compare averaged attention patterns across all transformer layers.
 
     Creates a (n_layers × 2) subplot grid:
-        Left column  – mean inter-feature attention map per layer.
-        Right column – mean intra-sample attention map per layer.
+        Left column  – mean channel-axis attention map per layer.
+        Right column – mean token-axis attention map per layer.
 
     Args:
         all_attn_maps: List of attention dictionaries, one per layer, as
@@ -266,7 +266,7 @@ def plot_layer_comparison(
         mean_inter = np.stack(inter_maps, axis=0).mean(axis=0)
         mean_intra = np.stack(intra_maps, axis=0).mean(axis=0)
 
-        # Left: inter-feature
+        # Left: channel-axis
         ax_inter = axes[layer_idx, 0]
         sns.heatmap(
             mean_inter,
@@ -277,10 +277,10 @@ def plot_layer_comparison(
             xticklabels=False,
             yticklabels=False,
         )
-        ax_inter.set_title(f'Layer {layer_idx + 1} – Inter-feature (α={alpha:.3f})', fontsize=9)
+        ax_inter.set_title(f'Layer {layer_idx + 1} – Channel-axis (α={alpha:.3f})', fontsize=9)
         ax_inter.set_ylabel('Feature dim', fontsize=8)
 
-        # Right: intra-sample
+        # Right: token-axis
         ax_intra = axes[layer_idx, 1]
         sns.heatmap(
             mean_intra,
@@ -291,7 +291,7 @@ def plot_layer_comparison(
             xticklabels=False,
             yticklabels=False,
         )
-        ax_intra.set_title(f'Layer {layer_idx + 1} – Intra-sample (α={alpha:.3f})', fontsize=9)
+        ax_intra.set_title(f'Layer {layer_idx + 1} – Token-axis (α={alpha:.3f})', fontsize=9)
 
     plt.tight_layout()
     _save_or_show(fig, save_path)

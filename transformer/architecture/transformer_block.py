@@ -12,7 +12,7 @@ class CustomTransformerBlock(nn.Module):
         super().__init__()
         
         # Multi-head self-attention
-        self.self_attn = MultiHeadAttention(d_model, nhead, seq_len)
+        self.self_attn = MultiHeadAttention(d_model, nhead, seq_len, dropout=dropout)
         
         # Feed-forward network
         self.ffn = nn.Sequential(
