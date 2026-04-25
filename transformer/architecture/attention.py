@@ -3,7 +3,7 @@ import torch
 
 class Attention(nn.Module):
 
-    def __init__(self, d_model, attn_dropout=0.0):
+    def __init__(self, d_model):
         super().__init__()
 
         self.W_q = nn.Linear(in_features=d_model, out_features= d_model, bias=False)
@@ -11,7 +11,6 @@ class Attention(nn.Module):
         self.W_v = nn.Linear(in_features=d_model, out_features= d_model, bias=False)
 
         self.d_model = d_model
-        self.attn_dropout = nn.Dropout(attn_dropout)
 
     def forward(self, encodings_q, encodings_k, encodings_v, mask=None, return_attention=False):
 
@@ -28,7 +27,6 @@ class Attention(nn.Module):
             scaled_sims = scaled_sims + mask
 
         attention_percents = torch.softmax(scaled_sims, dim=-1)
-        attention_percents = self.attn_dropout(attention_percents)
 
         attention_scores = torch.matmul(attention_percents, v)
 
@@ -36,11 +34,11 @@ class Attention(nn.Module):
             return attention_scores, attention_percents
 
         return attention_scores
-    
+
 class MultiHeadAttention(nn.Module):
     """Multi-head attention using the custom Attention class."""
 
-    def __init__(self, d_model, nhead, seq_len, dropout=0.1):
+    def __init__(self, d_model, nhead, seq_len):
         super().__init__()
         assert d_model % nhead == 0, "d_model must be divisible by nhead"
 
@@ -51,22 +49,18 @@ class MultiHeadAttention(nn.Module):
 
         # Create attention heads (both use head_dim = d_model // nhead)
         self.heads_inter = nn.ModuleList([
-            Attention(self.head_dim, attn_dropout=dropout) for _ in range(nhead)
+            Attention(self.head_dim) for _ in range(nhead)
         ])
 
         self.heads_intra = nn.ModuleList([
-            Attention(self.head_dim, attn_dropout=dropout) for _ in range(nhead)
+            Attention(self.head_dim) for _ in range(nhead)
         ])
 
         # Projection layers for channel-axis (inter-feature) attention
-        # Project seq_len -> d_model, then per-head independent projections
+        # Project seq_len -> d_model, apply multi-head attention, project back
         self.W_proj_inter_in = nn.Linear(seq_len, d_model, bias=False)
-        self.inter_activation = nn.GELU()
         self.W_proj_inter_out = nn.Linear(d_model, seq_len, bias=False)
-        # Independent per-head projections (each head gets its own view)
-        self.W_split_inter = nn.ModuleList([
-            nn.Linear(d_model, self.head_dim, bias=False) for _ in range(nhead)
-        ])
+        self.W_split_inter = nn.Linear(d_model, d_model, bias=False)
         self.W_out_inter = nn.Linear(d_model, d_model, bias=False)
 
         # Projection layers for token-axis (intra-sample) attention
@@ -75,7 +69,7 @@ class MultiHeadAttention(nn.Module):
 
         # Learnable parameter to control inter/intra attention mixing (initialized to 0.5)
         self.alpha = nn.Parameter(torch.tensor(0.5))
-    
+
     def forward(self, x, mask=None, return_attention=False):
         batch_size, seq_len, _ = x.shape
 
@@ -83,14 +77,16 @@ class MultiHeadAttention(nn.Module):
         # Transpose to treat features as sequence: (batch, seq, d_model) -> (batch, d_model, seq_len)
         x_transposed = x.transpose(1, 2)  # (batch, d_model, seq_len)
 
-        # Project seq_len -> d_model with nonlinearity: (batch, d_model, seq_len) -> (batch, d_model, d_model)
-        x_proj_inter = self.inter_activation(self.W_proj_inter_in(x_transposed))
+        # Project seq_len -> d_model: (batch, d_model, seq_len) -> (batch, d_model, d_model)
+        x_proj_inter = self.W_proj_inter_in(x_transposed)
 
-        # Independent per-head projections (each head gets its own view of the channels)
+        # Split into heads: (batch, d_model, d_model) -> (batch, d_model, nhead, head_dim)
+        x_proj_inter = self.W_split_inter(x_proj_inter).view(batch_size, self.d_model, self.nhead, self.head_dim)
+
         head_outputs_inter = []
         inter_attn_weights = []  # (nhead,) each: (batch, d_model, d_model)
         for i, head in enumerate(self.heads_inter):
-            head_input = self.W_split_inter[i](x_proj_inter)  # (batch, d_model, head_dim)
+            head_input = x_proj_inter[:, :, i, :]  # (batch, d_model, head_dim)
             if return_attention:
                 head_out, attn_w = head(head_input, head_input, head_input, return_attention=True)
                 inter_attn_weights.append(attn_w)
@@ -113,7 +109,7 @@ class MultiHeadAttention(nn.Module):
         # Residual Connection
         output_inter = output_inter + x
 
-        ## Intra-sample attention: attend across sequence positions (standard attention)
+        ## Token-axis attention: attend across sequence positions (standard attention)
         # Project and reshape: (batch, seq, d_model) -> (batch, seq, nhead, head_dim)
         x_proj_intra = self.W_split_intra(output_inter).view(batch_size, seq_len, self.nhead, self.head_dim)
 
@@ -149,4 +145,3 @@ class MultiHeadAttention(nn.Module):
             return output, attn_maps
 
         return output
-

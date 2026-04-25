@@ -34,10 +34,10 @@ class BioSpectralFormer(TrainEngine, BaseClassifierModel):
     
     def __init__(self,
                  num_spectral_points: int = 1141,
-                 d_model: int = 64,
+                 d_model: int = 32,
                  nhead: int = 4,
                  num_layers: int = 1,
-                 dim_feedforward: int = 128,
+                 dim_feedforward: int = 64,
                  dropout: float = 0.3,
                  patch_size: int = 16,
                  lr: float = 5e-3,
